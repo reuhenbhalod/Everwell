@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="format-detection" content="telephone=no"/>
   <title>EverWell Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
@@ -29,81 +32,145 @@
       --blue: #2563eb;
       --blue-bg: #dbeafe;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      -webkit-user-select: none;
+      user-select: none;
+      overscroll-behavior-x: none;
+    }
+    input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
 
-    /* NAV */
-    nav {
-      background: var(--purple);
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
+    /* TOP BAR (iOS-style header) */
+    .topbar {
       position: sticky;
       top: 0;
       z-index: 200;
-      box-shadow: 0 2px 12px rgba(75,46,131,0.3);
+      background: var(--purple);
+      padding-top: env(safe-area-inset-top, 0px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
     }
-    .nav-left { display: flex; align-items: center; gap: 2rem; }
-    .nav-logo { font-size: 1.4rem; font-weight: 800; color: white; }
-    .nav-logo span { color: var(--gold); }
-    .nav-tabs { display: flex; gap: 0.25rem; }
-    .nav-tab {
-      padding: 0.4rem 1rem;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: rgba(255,255,255,0.65);
-      cursor: pointer;
-      transition: all 0.15s;
-      text-decoration: none;
-    }
-    .nav-tab:hover { background: rgba(255,255,255,0.1); color: white; }
-    .nav-tab.active { background: rgba(255,255,255,0.15); color: white; }
-    .nav-right { display: flex; align-items: center; gap: 1rem; }
-    .nav-user {
+    .topbar-inner {
+      height: 50px;
+      padding: 0 1rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(255,255,255,0.12);
-      border-radius: 100px;
-      padding: 0.3rem 0.9rem 0.3rem 0.4rem;
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.9);
+      justify-content: space-between;
+      gap: 0.75rem;
     }
-    .nav-avatar {
-      width: 28px; height: 28px;
+    .topbar-logo {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.01em;
+    }
+    .topbar-logo span { color: var(--gold); }
+    .topbar-actions { display: flex; align-items: center; gap: 0.6rem; }
+    .topbar-user {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.25rem 0.7rem 0.25rem 0.3rem;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      color: rgba(255,255,255,0.92);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+    .topbar-avatar {
+      width: 26px; height: 26px;
       border-radius: 50%;
       background: var(--gold);
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.75rem; color: var(--purple);
+      font-weight: 700; font-size: 0.72rem; color: var(--purple);
     }
-    .sync-badge {
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.5);
+    .sync-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      animation: pulseDot 1.6s ease-in-out infinite;
     }
+    .sync-dot.ok { background: #4ade80; animation: none; }
+    @keyframes pulseDot { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
 
-    /* APPLE HEALTH BUTTON (visible only in native iOS shell) */
+    /* legacy aliases (kept so existing JS that targets these still works) */
+    .nav-avatar { display: contents; }
+    .nav-user { display: none; }
+    .sync-badge { display: none; }
+
+    /* APPLE HEALTH BUTTON (top-right in nav, native shell only) */
     .health-btn {
       display: none;
       background: var(--gold);
       color: var(--purple);
       border: 0;
       border-radius: 999px;
-      padding: 0.45rem 0.95rem;
-      font-family: 'Inter', sans-serif;
+      padding: 0.4rem 0.85rem;
+      font-family: inherit;
       font-weight: 600;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      white-space: nowrap;
     }
-    .health-btn:hover { background: var(--gold-light); }
+    .health-btn:active { transform: scale(0.97); }
     .health-btn.connected {
-      background: var(--green-bg);
-      color: var(--green);
+      background: rgba(74,222,128,0.18);
+      color: #4ade80;
+      box-shadow: none;
     }
-    body.is-native .health-btn { display: inline-flex; align-items: center; gap: 0.35rem; }
+    body.is-native .health-btn { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+    /* BOTTOM TAB BAR (iOS native pattern) */
+    .tabbar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      background: rgba(255,255,255,0.92);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-top: 0.5px solid rgba(0,0,0,0.12);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .tabbar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 2px 4px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 500;
+      min-height: 50px;
+      cursor: pointer;
+      transition: color 0.12s;
+    }
+    .tabbar-item:active { opacity: 0.5; }
+    .tabbar-item.active { color: var(--purple); }
+    .tabbar-item.emergency { color: #94a3b8; }
+    .tabbar-item.emergency.active { color: var(--red); }
+    .tabbar-icon {
+      width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .tabbar-item.active .tabbar-icon { stroke-width: 2.2; }
+    .tabbar-label {
+      font-size: 10px;
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+    }
 
     /* APPLE HEALTH CARD */
     .health-card {
@@ -166,7 +233,14 @@
     }
 
     /* PAGE */
-    .page { max-width: 1160px; margin: 0 auto; padding: 2rem 2rem 5rem; }
+    .page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem calc(86px + env(safe-area-inset-bottom, 0px));
+    }
+    @media (min-width: 768px) {
+      .page { padding: 2rem 2rem calc(96px + env(safe-area-inset-bottom, 0px)); }
+    }
 
     /* VIEWS */
     .view { display: none; }
@@ -448,29 +522,48 @@
 </head>
 <body>
 
-<nav>
-  <div class="nav-left">
-    <div class="nav-logo">Ever<span>Well</span></div>
-    <div class="nav-tabs">
-      <a class="nav-tab active" data-view="dashboard" href="#">Dashboard</a>
-      <a class="nav-tab" data-view="report" href="#">Daily Report</a>
-      <a class="nav-tab" data-view="anomalies" href="#">Anomaly Monitor</a>
-      <a class="nav-tab" data-view="timeline" href="#">Timeline</a>
-      <a class="nav-tab" data-view="contacts" href="#">Care Team</a>
-      <a class="nav-tab" data-view="emergency" href="#">🚨 Emergency</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo">Ever<span>Well</span></div>
+    <div class="topbar-actions">
+      <button class="health-btn" id="healthBtn" type="button" onclick="connectAppleHealth()">
+        <span id="healthBtnIcon">+</span>
+        <span id="healthBtnLabel">Apple Health</span>
+      </button>
+      <div class="topbar-user">
+        <div class="topbar-avatar" id="navAvatar">?</div>
+        <span id="navName">—</span>
+      </div>
+      <span class="sync-dot" id="syncBadge" title="Syncing"></span>
     </div>
   </div>
-  <div class="nav-right">
-    <button class="health-btn" id="healthBtn" type="button" onclick="connectAppleHealth()">
-      <span id="healthBtnIcon">+</span>
-      <span id="healthBtnLabel">Connect Apple Health</span>
-    </button>
-    <span class="sync-badge" id="syncBadge">Syncing...</span>
-    <div class="nav-user">
-      <div class="nav-avatar" id="navAvatar">?</div>
-      <span id="navName">—</span>
-    </div>
-  </div>
+</header>
+
+<nav class="tabbar" role="tablist">
+  <a class="tabbar-item nav-tab active" data-view="dashboard" href="#" role="tab">
+    <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+    <span class="tabbar-label">Home</span>
+  </a>
+  <a class="tabbar-item nav-tab" data-view="report" href="#" role="tab">
+    <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M7 3h8l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg>
+    <span class="tabbar-label">Report</span>
+  </a>
+  <a class="tabbar-item nav-tab" data-view="anomalies" href="#" role="tab">
+    <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>
+    <span class="tabbar-label">Anomaly</span>
+  </a>
+  <a class="tabbar-item nav-tab" data-view="timeline" href="#" role="tab">
+    <svg class="tabbar-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <span class="tabbar-label">Timeline</span>
+  </a>
+  <a class="tabbar-item nav-tab" data-view="contacts" href="#" role="tab">
+    <svg class="tabbar-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.4-3.4 3-5.6 6-5.6s5.6 2.2 6 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M15 20c.3-2.5 2.1-4 4-4"/></svg>
+    <span class="tabbar-label">Care</span>
+  </a>
+  <a class="tabbar-item nav-tab emergency" data-view="emergency" href="#" role="tab">
+    <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.5"/></svg>
+    <span class="tabbar-label">SOS</span>
+  </a>
 </nav>
 
 <div class="page">
@@ -888,7 +981,11 @@ async function loadDashboard() {
     // ── Show dashboard
     $('loadingState').classList.add('hidden');
     $('view-dashboard').classList.add('active');
-    $('syncBadge').textContent = 'Synced ' + new Date().toLocaleTimeString();
+    (function (s) {
+      if (!s) return;
+      s.classList.add('ok');
+      s.title = 'Synced ' + new Date().toLocaleTimeString();
+    })($('syncBadge'));
 
   } catch (err) {
     console.error('loadDashboard error:', err);
