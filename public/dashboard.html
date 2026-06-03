@@ -101,28 +101,37 @@
     .nav-user { display: none; }
     .sync-badge { display: none; }
 
-    /* APPLE HEALTH BUTTON (top-right in nav, native shell only) */
-    .health-btn {
-      display: none;
-      background: var(--gold);
-      color: var(--purple);
-      border: 0;
+    /* DATA SOURCE MODE: show health-only tiles only in Apple Health mode, whoop-only tiles only in WHOOP mode */
+    [data-mode="health"] .whoop-only,
+    [data-mode="whoop"]  .health-only { display: none !important; }
+
+    /* Top-right Apple Health pill: retired in favor of the landing-page picker */
+    .health-btn { display: none !important; }
+
+    /* Tiny source badge in the top bar so the user can tell which mode they're in */
+    .source-pill {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.5rem;
       border-radius: 999px;
-      padding: 0.4rem 0.85rem;
-      font-family: inherit;
-      font-weight: 600;
-      font-size: 0.75rem;
+      color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.12);
+    }
+    [data-mode="health"] .source-pill { background: rgba(74,222,128,0.18); color: #4ade80; }
+    [data-mode="whoop"]  .source-pill { background: rgba(201,149,26,0.18); color: var(--gold-light); }
+
+    /* Switch source link inside Care tab */
+    .switch-source {
+      display: block;
+      margin-top: 1.25rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-decoration: underline;
       cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-      white-space: nowrap;
     }
-    .health-btn:active { transform: scale(0.97); }
-    .health-btn.connected {
-      background: rgba(74,222,128,0.18);
-      color: #4ade80;
-      box-shadow: none;
-    }
-    body.is-native .health-btn { display: inline-flex; align-items: center; gap: 0.3rem; }
 
     /* BOTTOM TAB BAR (iOS native pattern) */
     .tabbar {
@@ -526,10 +535,7 @@
   <div class="topbar-inner">
     <div class="topbar-logo">Ever<span>Well</span></div>
     <div class="topbar-actions">
-      <button class="health-btn" id="healthBtn" type="button" onclick="connectAppleHealth()">
-        <span id="healthBtnIcon">+</span>
-        <span id="healthBtnLabel">Apple Health</span>
-      </button>
+      <span class="source-pill" id="sourcePill">—</span>
       <div class="topbar-user">
         <div class="topbar-avatar" id="navAvatar">?</div>
         <span id="navName">—</span>
@@ -544,11 +550,11 @@
     <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
     <span class="tabbar-label">Home</span>
   </a>
-  <a class="tabbar-item nav-tab" data-view="report" href="#" role="tab">
+  <a class="tabbar-item nav-tab whoop-only" data-view="report" href="#" role="tab">
     <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M7 3h8l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg>
     <span class="tabbar-label">Report</span>
   </a>
-  <a class="tabbar-item nav-tab" data-view="anomalies" href="#" role="tab">
+  <a class="tabbar-item nav-tab whoop-only" data-view="anomalies" href="#" role="tab">
     <svg class="tabbar-icon" viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>
     <span class="tabbar-label">Anomaly</span>
   </a>
@@ -589,17 +595,6 @@
       </div>
     </div>
 
-    <!-- Apple Health (native shell only) -->
-    <div class="health-card" id="healthCard">
-      <div class="health-card-top"></div>
-      <div class="health-card-title">
-        Apple Health
-        <span class="badge">iPhone &amp; Apple Watch</span>
-      </div>
-      <div class="health-metrics" id="healthMetrics"></div>
-      <div class="health-updated" id="healthUpdated"></div>
-    </div>
-
     <!-- Top stats -->
     <div class="stat-grid" id="statGrid">
       <!-- Recovery ring -->
@@ -620,7 +615,7 @@
         </div>
       </div>
 
-      <div class="stat-card fade-in">
+      <div class="stat-card fade-in whoop-only">
         <div class="stat-card-top" style="background:var(--gold)"></div>
         <div class="stat-icon">⚡</div>
         <div class="stat-lbl">Day Strain</div>
@@ -628,13 +623,37 @@
         <div class="stat-sub" id="strainCal">Calories: —</div>
       </div>
 
-      <div class="stat-card fade-in">
+      <div class="stat-card fade-in whoop-only">
         <div class="stat-card-top" style="background:#2563eb"></div>
         <div class="stat-icon">🌙</div>
         <div class="stat-lbl">Sleep Performance</div>
         <div class="stat-val" id="sleepVal" style="color:#2563eb">—<span class="stat-unit">%</span></div>
         <div class="stat-sub" id="sleepDur">Duration: —</div>
         <div class="stat-sub" id="sleepEff">Efficiency: —</div>
+      </div>
+
+      <div class="stat-card fade-in health-only">
+        <div class="stat-card-top" style="background:#2563eb"></div>
+        <div class="stat-icon">🌙</div>
+        <div class="stat-lbl">Sleep</div>
+        <div class="stat-val" id="sleepHrsVal" style="color:#2563eb">—<span class="stat-unit">h</span></div>
+        <div class="stat-sub" id="sleepHrsSub">Last night</div>
+      </div>
+
+      <div class="stat-card fade-in health-only">
+        <div class="stat-card-top" style="background:#16a34a"></div>
+        <div class="stat-icon">🩸</div>
+        <div class="stat-lbl">Blood Oxygen</div>
+        <div class="stat-val" id="spo2Val" style="color:#16a34a">—<span class="stat-unit">%</span></div>
+        <div class="stat-sub" id="spo2Sub">Latest reading</div>
+      </div>
+
+      <div class="stat-card fade-in health-only">
+        <div class="stat-card-top" style="background:#dc2626"></div>
+        <div class="stat-icon">❤️</div>
+        <div class="stat-lbl">Heart Rate</div>
+        <div class="stat-val" id="hrVal" style="color:#dc2626">—<span class="stat-unit">bpm</span></div>
+        <div class="stat-sub" id="hrSub">Latest reading</div>
       </div>
 
       <div class="stat-card fade-in">
@@ -660,8 +679,8 @@
       </div>
     </div>
 
-    <!-- Sleep breakdown -->
-    <div class="card fade-in" style="margin-bottom:1.5rem;">
+    <!-- Sleep breakdown (WHOOP only — Apple Health doesn't expose deep/light/awake split through the plugin) -->
+    <div class="card fade-in whoop-only" style="margin-bottom:1.5rem;">
       <div style="font-size:0.82rem;font-weight:700;color:var(--purple);margin-bottom:0.2rem;">Sleep Stage Breakdown</div>
       <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;">Deep · REM · Light · Awake</div>
       <div class="sleep-rows" id="sleepRows"></div>
@@ -730,6 +749,7 @@
     </div>
     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">These contacts are notified in order when an emergency is detected. Edit to customize your escalation chain.</p>
     <div class="contacts-grid" id="contactsGrid"></div>
+    <a class="switch-source" href="javascript:switchSource()">Switch data source (currently: <span id="switchSourceName">—</span>)</a>
   </div>
 
   <!-- EMERGENCY VIEW -->
@@ -878,10 +898,15 @@ let dashData = null;
 // ── LOAD DASHBOARD ─────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    const res = await fetch('/api/dashboard');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    let data;
+    if (MODE === 'health') {
+      data = await fetchFromHealth();
+    } else {
+      const res = await fetch('/api/dashboard');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      data = await res.json();
+      if (data.error) throw new Error(data.error);
+    }
     dashData = data;
 
     const { profile, cycles, sleep } = data;
@@ -978,6 +1003,9 @@ async function loadDashboard() {
       rowsEl.appendChild(row);
     });
 
+    // ── Apple Health: populate the live-only tiles (SpO2, live HR, sleep hours)
+    if (MODE === 'health') applyHealthExtras(data);
+
     // ── Show dashboard
     $('loadingState').classList.add('hidden');
     $('view-dashboard').classList.add('active');
@@ -989,10 +1017,11 @@ async function loadDashboard() {
 
   } catch (err) {
     console.error('loadDashboard error:', err);
+    const reconnectLabel = MODE === 'health' ? 'Switch data source' : 'Reconnect WHOOP';
     $('loadingState').innerHTML =
       '<div style="text-align:center;">' +
         '<p style="color:#dc2626;font-size:1rem;margin-bottom:0.5rem;">Failed to load: ' + err.message + '</p>' +
-        '<a href="/" style="color:var(--purple);font-size:0.85rem;">← Reconnect WHOOP</a>' +
+        '<a href="javascript:switchSource()" style="color:var(--purple);font-size:0.85rem;">← ' + reconnectLabel + '</a>' +
       '</div>';
   }
 }
@@ -1199,135 +1228,191 @@ function cancelEmergency() {
   $('resolvedMsg').textContent = 'Alert dismissed. You can trigger a new emergency from this screen anytime.';
 }
 
-// ── APPLE HEALTH (Capacitor native shell) ─────────────────────
+// ── DATA SOURCE MODE ──────────────────────────────────────────
 function isNativeShell() {
   return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
 }
-
 function healthPlugin() {
   return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.HealthPlugin;
 }
 
-const HEALTH_PERMS = [
-  'READ_HRV',
-  'READ_RESTING_HEART_RATE',
-  'READ_HEART_RATE',
-  'READ_RESPIRATORY_RATE',
-  'READ_OXYGEN_SATURATION',
-  'READ_SLEEP'
-];
-
-window.everwellHealth = {};
-
-async function connectAppleHealth() {
-  const plugin = healthPlugin();
-  if (!plugin) {
-    alert('Apple Health is only available inside the EverWell iOS app.');
-    return;
-  }
-  const btn = $('healthBtn');
-  const label = $('healthBtnLabel');
+const MODE = (function () {
   try {
-    btn.disabled = true;
-    label.textContent = 'Connecting...';
-    const avail = await plugin.isHealthAvailable();
-    if (!avail || !avail.available) {
-      alert('Apple Health is not available on this device.');
-      label.textContent = 'Connect Apple Health';
-      btn.disabled = false;
-      return;
-    }
-    await plugin.requestHealthPermissions({ permissions: HEALTH_PERMS });
-    await refreshAppleHealth();
-    btn.classList.add('connected');
-    $('healthBtnIcon').textContent = '✓';
-    label.textContent = 'Apple Health Connected';
-    btn.disabled = false;
-  } catch (err) {
-    console.error('Apple Health connect failed:', err);
-    alert('Could not connect to Apple Health: ' + (err && err.message ? err.message : err));
-    label.textContent = 'Connect Apple Health';
-    btn.disabled = false;
-  }
+    const url = new URLSearchParams(window.location.search);
+    const m = url.get('mode') || localStorage.getItem('everwellMode');
+    if (m === 'health' || m === 'whoop') return m;
+  } catch (e) {}
+  return 'whoop';
+})();
+document.body.dataset.mode = MODE;
+if (isNativeShell()) document.body.classList.add('is-native');
+$('sourcePill').textContent = MODE === 'health' ? 'Apple Health' : 'WHOOP';
+if ($('switchSourceName')) $('switchSourceName').textContent = MODE === 'health' ? 'Apple Health' : 'WHOOP';
+
+function switchSource() {
+  try { localStorage.removeItem('everwellMode'); } catch (e) {}
+  window.location.href = '/';
 }
 
-async function refreshAppleHealth() {
+// ── APPLE HEALTH DATA ADAPTER ─────────────────────────────────
+// Queries HealthKit for the past 7 days, then synthesizes a
+// { profile, cycles, sleep } object in the same shape as /api/dashboard
+// so the rest of the dashboard rendering can stay WHOOP-mode-agnostic.
+async function fetchFromHealth() {
   const plugin = healthPlugin();
-  if (!plugin) return;
-  const types = [
-    { key: 'hrv',         dataType: 'hrv',                 label: 'HRV',          unit: 'ms'  },
-    { key: 'rhr',         dataType: 'resting-heart-rate',  label: 'Resting HR',   unit: 'bpm' },
-    { key: 'heartRate',   dataType: 'heart-rate',          label: 'Heart Rate',   unit: 'bpm' },
-    { key: 'respiratory', dataType: 'respiratory-rate',    label: 'Respiratory',  unit: '/min'},
-    { key: 'spo2',        dataType: 'oxygen-saturation',   label: 'Blood Oxygen', unit: '%'   },
-    { key: 'sleep',       dataType: 'sleep',               label: 'Sleep',        unit: 'h'   }
-  ];
+  if (!plugin) throw new Error('HealthKit plugin not available — open the EverWell iOS app.');
 
-  const results = await Promise.all(types.map(async t => {
+  // Re-request perms in case they were partially granted before. iOS is a no-op
+  // for already-decided permissions, so this is cheap.
+  try {
+    await plugin.requestHealthPermissions({
+      permissions: ['READ_HRV','READ_RESTING_HEART_RATE','READ_HEART_RATE','READ_RESPIRATORY_RATE','READ_OXYGEN_SATURATION','READ_SLEEP']
+    });
+  } catch (e) { /* surface in catch below if real */ }
+
+  const now = new Date();
+  const dayStart = (d) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+  const todayStart = dayStart(now);
+  const startDate = new Date(todayStart.getTime() - 6 * 86400000); // 7 calendar days
+  const endDate   = new Date(todayStart.getTime() + 86400000);     // exclusive end = tomorrow start
+
+  const startISO = startDate.toISOString();
+  const endISO   = endDate.toISOString();
+
+  const dataTypes = ['hrv','resting-heart-rate','heart-rate','respiratory-rate','oxygen-saturation','sleep'];
+
+  const aggregated = {};
+  await Promise.all(dataTypes.map(async dataType => {
     try {
-      const r = await plugin.queryLatestSample({ dataType: t.dataType });
-      return { ...t, sample: r };
+      const r = await plugin.queryAggregated({ startDate: startISO, endDate: endISO, dataType, bucket: 'day' });
+      aggregated[dataType] = r.aggregatedData || [];
     } catch (e) {
-      return { ...t, sample: null, error: e && e.message };
+      console.warn('queryAggregated failed for', dataType, e && e.message);
+      aggregated[dataType] = [];
     }
   }));
 
-  const container = $('healthMetrics');
-  container.innerHTML = '';
-  let mostRecent = null;
+  // Also pull latest single samples for the live tiles
+  const latest = {};
+  await Promise.all(['hrv','resting-heart-rate','heart-rate','respiratory-rate','oxygen-saturation','sleep'].map(async dt => {
+    try { latest[dt] = await plugin.queryLatestSample({ dataType: dt }); } catch (e) { latest[dt] = null; }
+  }));
 
-  results.forEach(r => {
-    const v = r.sample && r.sample.value;
-    let display = '—';
-    if (v != null) {
-      if (r.key === 'spo2') {
-        // HealthKit returns 0–1; convert to percentage
-        display = (v * 100).toFixed(0);
-      } else if (r.key === 'sleep') {
-        // Sleep value is in minutes per the plugin doc; convert to hours
-        display = (v / 60).toFixed(1);
-      } else if (r.key === 'hrv') {
-        display = Math.round(v).toString();
-      } else if (r.key === 'rhr' || r.key === 'heartRate') {
-        display = Math.round(v).toString();
-      } else {
-        display = (typeof v === 'number') ? v.toFixed(1) : String(v);
+  // Build a day-indexed lookup keyed by toDateString()
+  const byDay = (arr) => {
+    const m = {};
+    arr.forEach(s => { m[new Date(s.startDate).toDateString()] = s.value; });
+    return m;
+  };
+  const hrvDay  = byDay(aggregated['hrv']);
+  const rhrDay  = byDay(aggregated['resting-heart-rate']);
+  const hrDay   = byDay(aggregated['heart-rate']);
+  const rrDay   = byDay(aggregated['respiratory-rate']);
+  const spo2Day = byDay(aggregated['oxygen-saturation']);
+  const sleepDay = byDay(aggregated['sleep']); // minutes
+
+  // Build per-day records, MOST RECENT FIRST (matches WHOOP API order)
+  const cycleRecords = [];
+  const sleepRecords = [];
+
+  const hrvSeries = [];
+  const rhrSeries = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(todayStart.getTime() - i * 86400000);
+    const key = day.toDateString();
+    hrvSeries.push(hrvDay[key]);
+    rhrSeries.push(rhrDay[key]);
+  }
+
+  function recoveryFromBaseline(idx) {
+    const cur = hrvSeries[idx], curRhr = rhrSeries[idx];
+    if (cur == null && curRhr == null) return null;
+    const olderHrv = hrvSeries.slice(idx + 1).filter(v => v != null);
+    const olderRhr = rhrSeries.slice(idx + 1).filter(v => v != null);
+    const baseHrv = olderHrv.length ? olderHrv.reduce((a,b)=>a+b,0) / olderHrv.length : cur;
+    const baseRhr = olderRhr.length ? olderRhr.reduce((a,b)=>a+b,0) / olderRhr.length : curRhr;
+    let score = 70;
+    if (cur != null && baseHrv) score += 25 * Math.tanh((cur - baseHrv) / baseHrv);
+    if (curRhr != null && baseRhr) score -= 25 * Math.tanh((curRhr - baseRhr) / baseRhr);
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }
+
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(todayStart.getTime() - i * 86400000);
+    const key = day.toDateString();
+    const dayEnd = new Date(day.getTime() + 86400000);
+    const hrv = hrvDay[key];
+    const rhr = rhrDay[key];
+    const rr  = rrDay[key];
+
+    cycleRecords.push({
+      id: 'h_' + day.getTime(),
+      start: day.toISOString(),
+      end: dayEnd.toISOString(),
+      score: {},
+      recovery: {
+        recovery_score: recoveryFromBaseline(i),
+        hrv_rmssd_milli: hrv || 0,
+        resting_heart_rate: rhr || 0,
+        respiratory_rate: rr || 0
       }
-      window.everwellHealth[r.key] = v;
+    });
+
+    const sleepMin = sleepDay[key];
+    if (sleepMin != null) {
+      sleepRecords.push({
+        start: day.toISOString(),
+        end: dayEnd.toISOString(),
+        score: {
+          stage_summary: {
+            total_in_bed_time_milli: Math.round(sleepMin * 60000)
+          }
+        }
+      });
     }
-
-    if (r.sample && r.sample.endDate) {
-      const t = new Date(r.sample.endDate).getTime();
-      if (!mostRecent || t > mostRecent) mostRecent = t;
-    }
-
-    const div = document.createElement('div');
-    div.className = 'health-metric';
-    div.innerHTML =
-      '<div class="health-metric-lbl">' + r.label + '</div>' +
-      '<div class="health-metric-val">' + display +
-      '<span class="health-metric-unit">' + r.unit + '</span></div>';
-    container.appendChild(div);
-  });
-
-  $('healthCard').classList.add('show');
-  if (mostRecent) {
-    $('healthUpdated').textContent =
-      'Latest reading: ' + new Date(mostRecent).toLocaleString();
   }
+
+  return {
+    profile: { first_name: 'You' },
+    cycles: { records: cycleRecords },
+    sleep: { records: sleepRecords },
+    _health: { aggregated, latest }
+  };
 }
 
-function initHealthShellUI() {
-  if (isNativeShell()) {
-    document.body.classList.add('is-native');
+function applyHealthExtras(data) {
+  const ag = data && data._health;
+  if (!ag) return;
+  const last = ag.latest || {};
+  // SpO2 (HealthKit returns 0–1)
+  const spo2 = last['oxygen-saturation'] && last['oxygen-saturation'].value;
+  if (spo2 != null) {
+    $('spo2Val').innerHTML = (spo2 * 100).toFixed(0) + '<span class="stat-unit">%</span>';
+    if (last['oxygen-saturation'].endDate) {
+      $('spo2Sub').textContent = 'As of ' + new Date(last['oxygen-saturation'].endDate).toLocaleTimeString();
+    }
+  }
+  // Live heart rate
+  const hr = last['heart-rate'] && last['heart-rate'].value;
+  if (hr != null) {
+    $('hrVal').innerHTML = Math.round(hr) + '<span class="stat-unit">bpm</span>';
+    if (last['heart-rate'].endDate) {
+      $('hrSub').textContent = 'As of ' + new Date(last['heart-rate'].endDate).toLocaleTimeString();
+    }
+  }
+  // Sleep hours (from the latest sleep sample value, which is total minutes)
+  const sleepMin = last['sleep'] && last['sleep'].value;
+  if (sleepMin != null) {
+    $('sleepHrsVal').innerHTML = (sleepMin / 60).toFixed(1) + '<span class="stat-unit">h</span>';
+    if (last['sleep'].endDate) {
+      $('sleepHrsSub').textContent = 'Ended ' + new Date(last['sleep'].endDate).toLocaleTimeString();
+    }
   }
 }
-initHealthShellUI();
 
 // ── INIT ───────────────────────────────────────────────────────
 loadDashboard();
 setInterval(loadDashboard, 5 * 60 * 1000);
-setInterval(() => { if (isNativeShell() && healthPlugin()) refreshAppleHealth().catch(() => {}); }, 5 * 60 * 1000);
 </script>
 </body>
 </html>
