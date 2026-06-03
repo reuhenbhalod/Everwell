@@ -1,0 +1,19 @@
+{
+  "name": "everwell-whoop",
+  "version": "1.0.0",
+  "description": "EverWell WHOOP integration server",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5"
+  }
+}

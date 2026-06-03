@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EverWell — Detecting before Disaster</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --purple: #4B2E83;
+      --purple-light: #5d3a9e;
+      --gold: #C9951A;
+      --gold-light: #e8b020;
+      --lavender: #E8E4F0;
+      --white: #ffffff;
+      --text-muted: rgba(255,255,255,0.65);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--purple);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,149,26,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    /* Gold border top/bottom like deck */
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 6px;
+      background: var(--gold);
+    }
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: var(--gold);
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      animation: rise 0.8s ease both;
+      z-index: 1;
+    }
+    .logo {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      line-height: 1;
+    }
+    .logo span { color: var(--gold); }
+    .tagline {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 300;
+    }
+    .gold-line {
+      width: 120px;
+      height: 2px;
+      background: var(--gold);
+      margin: 1.25rem auto 3rem;
+    }
+    .connect-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--gold);
+      color: var(--purple);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 1rem 2.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(201,149,26,0.3);
+    }
+    .connect-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(201,149,26,0.45);
+    }
+    .features {
+      display: flex;
+      gap: 2.5rem;
+      justify-content: center;
+      margin-top: 4rem;
+      flex-wrap: wrap;
+    }
+    .feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      max-width: 140px;
+    }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+    .feature-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: center;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+    .error-msg {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar"></div>
+  <div class="container">
+    <div class="logo">Ever<span>Well</span></div>
+    <div class="tagline">Detecting before Disaster</div>
+    <div class="gold-line"></div>
+    <div class="error-msg" id="errorMsg">Connection failed. Please try again.</div>
+    <a href="/auth/whoop" class="connect-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Connect WHOOP to Begin
+    </a>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">💍</div>
+        <div class="feature-label">Passive 24/7 Monitoring</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🚨</div>
+        <div class="feature-label">Automatic Emergency Escalation</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📋</div>
+        <div class="feature-label">Daily AI Health Reports</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-label">Anomaly Detection</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">👨‍👩‍👧</div>
+        <div class="feature-label">Caregiver Alerts</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    if (new URLSearchParams(window.location.search).get('error')) {
+      document.getElementById('errorMsg').classList.add('show');
+    }
+  </script>
+</body>
+</html>

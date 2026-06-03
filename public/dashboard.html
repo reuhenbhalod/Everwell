@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EverWell Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --purple: #4B2E83;
+      --purple-mid: #5d3a9e;
+      --purple-light: #7b5cb8;
+      --lavender: #E8E4F0;
+      --lavender-mid: #d4cde8;
+      --gold: #C9951A;
+      --gold-light: #e8b020;
+      --white: #ffffff;
+      --bg: #f7f6fb;
+      --surface: #ffffff;
+      --border: #e2ddf0;
+      --text: #1a1228;
+      --muted: #7b6fa0;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --yellow: #d97706;
+      --yellow-bg: #fef3c7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --blue: #2563eb;
+      --blue-bg: #dbeafe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      background: var(--purple);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(75,46,131,0.3);
+    }
+    .nav-left { display: flex; align-items: center; gap: 2rem; }
+    .nav-logo { font-size: 1.4rem; font-weight: 800; color: white; }
+    .nav-logo span { color: var(--gold); }
+    .nav-tabs { display: flex; gap: 0.25rem; }
+    .nav-tab {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+    .nav-tab.active { background: rgba(255,255,255,0.15); color: white; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.12);
+      border-radius: 100px;
+      padding: 0.3rem 0.9rem 0.3rem 0.4rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.9);
+    }
+    .nav-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.75rem; color: var(--purple);
+    }
+    .sync-badge {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* GOLD BOTTOM BAR */
+    nav::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--gold);
+    }
+
+    /* PAGE */
+    .page { max-width: 1160px; margin: 0 auto; padding: 2rem 2rem 5rem; }
+
+    /* VIEWS */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* LOADING */
+    .loading {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 60vh; gap: 1rem;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--lavender);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .loading p { color: var(--muted); font-size: 0.9rem; }
+
+    /* SECTION HEADERS */
+    .section-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .section-bar { width: 4px; height: 22px; background: var(--gold); border-radius: 2px; }
+    .section-label-tag {
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold);
+    }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--purple); }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .card-sm { padding: 1.1rem 1.25rem; }
+
+    /* STAT GRID */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 16px rgba(75,46,131,0.1); }
+    .stat-card-top { width: 100%; height: 3px; border-radius: 2px 2px 0 0; position: absolute; top: 0; left: 0; }
+    .stat-icon { font-size: 1.2rem; margin-bottom: 0.6rem; }
+    .stat-lbl { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
+    .stat-val { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .stat-unit { font-size: 0.9rem; font-weight: 400; color: var(--muted); margin-left: 2px; }
+    .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+
+    /* RECOVERY RING */
+    .ring-card {
+      display: flex; align-items: center; gap: 1.5rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+      position: relative; overflow: hidden;
+    }
+    .ring-card-top { width: 100%; height: 3px; border-radius: 2px 2px 0 0; position: absolute; top: 0; left: 0; }
+    .ring-svg { width: 90px; height: 90px; flex-shrink: 0; }
+    .ring-bg { fill: none; stroke: var(--lavender); stroke-width: 7; }
+    .ring-fill { fill: none; stroke-width: 7; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.2s ease; }
+    .ring-label { font-size: 1.3rem; font-weight: 800; dominant-baseline: middle; text-anchor: middle; }
+
+    /* TWO / THREE COL */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    @media(max-width: 700px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+    /* BAR CHART */
+    .bar-chart-wrap { height: 90px; display: flex; align-items: flex-end; gap: 5px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end; }
+    .bar-col .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 3px; }
+    .bar-col .bar-day { font-size: 0.6rem; color: var(--muted); }
+
+    /* SLEEP ROWS */
+    .sleep-rows { display: flex; flex-direction: column; gap: 0.5rem; }
+    .sleep-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--lavender); border-radius: 8px; padding: 0.6rem 0.85rem;
+      font-size: 0.82rem;
+    }
+    .sleep-stage-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; width: 80px; }
+
+    /* ANOMALY CARDS */
+    .anomaly-card {
+      border-radius: 10px; padding: 1rem 1.1rem;
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+    .anomaly-card.warning { background: var(--yellow-bg); border: 1px solid #fcd34d; }
+    .anomaly-card.positive { background: var(--green-bg); border: 1px solid #86efac; }
+    .anomaly-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .anomaly-card.warning .anomaly-dot { background: var(--yellow); }
+    .anomaly-card.positive .anomaly-dot { background: var(--green); }
+    .anomaly-msg { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+    .anomaly-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* REPORT VIEW */
+    .report-header {
+      background: var(--purple);
+      border-radius: 12px;
+      padding: 2rem;
+      color: white;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 3px;
+      background: var(--gold);
+    }
+    .report-date { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
+    .report-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .report-title span { color: var(--gold); }
+    .report-sub { font-size: 0.88rem; color: rgba(255,255,255,0.7); }
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.85rem; margin-bottom: 1.5rem; }
+    .report-metric {
+      background: var(--lavender); border-radius: 10px; padding: 1rem;
+      text-align: center;
+    }
+    .report-metric-val { font-size: 1.8rem; font-weight: 800; color: var(--purple); }
+    .report-metric-lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 0.25rem; }
+    .report-insight {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem;
+      border-left: 4px solid var(--purple);
+    }
+    .report-insight-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--purple); margin-bottom: 0.35rem; }
+    .report-insight p { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
+
+    /* EMERGENCY VIEW */
+    .emergency-container {
+      max-width: 480px; margin: 0 auto; text-align: center;
+    }
+    .emergency-header {
+      background: #dc2626; color: white;
+      border-radius: 12px; padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .emergency-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(255,255,255,0.2); border-radius: 100px;
+      padding: 0.3rem 0.85rem; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .emergency-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: white; animation: pulse-dot 1.2s ease-in-out infinite; }
+    .emergency-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .emergency-sub { font-size: 0.88rem; opacity: 0.85; }
+    .countdown-wrap { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .countdown-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .countdown-timer { font-size: 3rem; font-weight: 800; color: #dc2626; line-height: 1; margin-bottom: 0.75rem; }
+    .countdown-bar { height: 6px; background: var(--lavender); border-radius: 3px; overflow: hidden; }
+    .countdown-fill { height: 100%; background: #dc2626; border-radius: 3px; transition: width 1s linear; }
+    .emergency-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+    .emergency-btn {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 1rem 1.25rem; border-radius: 10px; border: none;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      font-size: 0.92rem; font-weight: 600; text-align: left;
+      transition: transform 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .emergency-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .emergency-btn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .btn-911 { background: #dc2626; color: white; }
+    .btn-911 .emergency-btn-icon { background: rgba(255,255,255,0.2); }
+    .btn-cancel { background: var(--lavender); color: var(--purple); }
+    .btn-cancel .emergency-btn-icon { background: white; }
+    .btn-contact { background: white; color: var(--text); border: 1px solid var(--border); }
+    .btn-contact .emergency-btn-icon { background: var(--lavender); }
+    .emergency-resolved {
+      background: var(--green-bg); border: 1px solid #86efac;
+      border-radius: 12px; padding: 2rem; text-align: center;
+      display: none;
+    }
+    .emergency-resolved.show { display: block; }
+    .emergency-resolved h2 { color: var(--green); font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .emergency-resolved p { color: var(--muted); font-size: 0.88rem; }
+    .test-emergency-btn {
+      background: var(--red-bg); color: var(--red); border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 0.6rem 1.25rem; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+      margin-top: 1rem; transition: background 0.15s;
+    }
+    .test-emergency-btn:hover { background: #fecaca; }
+
+    /* CONTACTS VIEW */
+    .contacts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .contact-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+    }
+    .contact-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--purple); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem;
+    }
+    .contact-name { font-weight: 700; font-size: 0.95rem; }
+    .contact-role { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.6rem; }
+    .contact-phone { font-size: 0.82rem; color: var(--purple); font-weight: 500; }
+    .priority-badge {
+      display: inline-block; padding: 0.15rem 0.6rem; border-radius: 100px;
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      margin-top: 0.5rem;
+    }
+    .priority-1 { background: var(--red-bg); color: var(--red); }
+    .priority-2 { background: var(--yellow-bg); color: var(--yellow); }
+    .priority-3 { background: var(--blue-bg); color: var(--blue); }
+    .add-contact-btn {
+      background: var(--lavender); border: 2px dashed var(--lavender-mid);
+      border-radius: 12px; padding: 1.25rem; text-align: center;
+      cursor: pointer; color: var(--purple); font-weight: 600;
+      font-size: 0.88rem; transition: background 0.15s;
+    }
+    .add-contact-btn:hover { background: var(--lavender-mid); }
+
+    /* TIMELINE */
+    .timeline { display: flex; flex-direction: column; }
+    .timeline-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-time { font-size: 0.72rem; color: var(--muted); font-weight: 500; min-width: 48px; padding-top: 2px; }
+    .timeline-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .timeline-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+    .timeline-content { flex: 1; }
+    .timeline-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.1rem; }
+    .timeline-desc { font-size: 0.78rem; color: var(--muted); }
+
+    /* ALERTS + BADGES */
+    .alert-strip {
+      background: var(--red-bg); border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 0.75rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--red);
+    }
+    .alert-strip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; animation: pulse-dot 1.5s ease-in-out infinite; }
+    .score-pill {
+      display: inline-block; padding: 0.15rem 0.65rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .pill-green { background: var(--green-bg); color: var(--green); }
+    .pill-yellow { background: var(--yellow-bg); color: var(--yellow); }
+    .pill-red { background: var(--red-bg); color: var(--red); }
+
+    /* HIDDEN */
+    .hidden { display: none !important; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeUp 0.4s ease both; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <div class="nav-logo">Ever<span>Well</span></div>
+    <div class="nav-tabs">
+      <a class="nav-tab active" data-view="dashboard" href="#">Dashboard</a>
+      <a class="nav-tab" data-view="report" href="#">Daily Report</a>
+      <a class="nav-tab" data-view="anomalies" href="#">Anomaly Monitor</a>
+      <a class="nav-tab" data-view="timeline" href="#">Timeline</a>
+      <a class="nav-tab" data-view="contacts" href="#">Care Team</a>
+      <a class="nav-tab" data-view="emergency" href="#">🚨 Emergency</a>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="sync-badge" id="syncBadge">Syncing...</span>
+    <div class="nav-user">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span id="navName">—</span>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- LOADING -->
+  <div class="loading" id="loadingState">
+    <div class="spinner"></div>
+    <p>Loading your health data...</p>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div class="view" id="view-dashboard">
+    <div id="alertStrip" class="alert-strip hidden">
+      <div class="alert-strip-dot"></div>
+      <span id="alertText"></span>
+    </div>
+
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div>
+        <div class="section-label-tag">Live Health Monitor</div>
+        <div class="section-title" id="dashGreeting">Good morning</div>
+      </div>
+    </div>
+
+    <!-- Top stats -->
+    <div class="stat-grid" id="statGrid">
+      <!-- Recovery ring -->
+      <div class="ring-card fade-in" id="recoveryCard">
+        <div class="ring-card-top" id="recoveryTopBar"></div>
+        <svg class="ring-svg" viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="37"/>
+          <circle class="ring-fill" id="recoveryRing" cx="45" cy="45" r="37"
+            stroke="#4B2E83" stroke-dasharray="232.5" stroke-dashoffset="232.5"/>
+          <text class="ring-label" x="45" y="46" id="recoveryRingText" fill="#4B2E83">—</text>
+        </svg>
+        <div>
+          <div class="stat-lbl">Recovery Score</div>
+          <div class="stat-val" id="recoveryVal" style="font-size:1.5rem">—</div>
+          <div class="stat-sub" id="recoveryHrv">HRV: —</div>
+          <div class="stat-sub" id="recoveryRhr">RHR: —</div>
+          <div class="stat-sub" id="recoveryResp">Resp: —</div>
+        </div>
+      </div>
+
+      <div class="stat-card fade-in">
+        <div class="stat-card-top" style="background:var(--gold)"></div>
+        <div class="stat-icon">⚡</div>
+        <div class="stat-lbl">Day Strain</div>
+        <div class="stat-val" id="strainVal" style="color:var(--gold)">—<span class="stat-unit">/21</span></div>
+        <div class="stat-sub" id="strainCal">Calories: —</div>
+      </div>
+
+      <div class="stat-card fade-in">
+        <div class="stat-card-top" style="background:#2563eb"></div>
+        <div class="stat-icon">🌙</div>
+        <div class="stat-lbl">Sleep Performance</div>
+        <div class="stat-val" id="sleepVal" style="color:#2563eb">—<span class="stat-unit">%</span></div>
+        <div class="stat-sub" id="sleepDur">Duration: —</div>
+        <div class="stat-sub" id="sleepEff">Efficiency: —</div>
+      </div>
+
+      <div class="stat-card fade-in">
+        <div class="stat-card-top" style="background:#7c3aed"></div>
+        <div class="stat-icon">🫁</div>
+        <div class="stat-lbl">Respiratory Rate</div>
+        <div class="stat-val" id="respVal" style="color:#7c3aed">—<span class="stat-unit">rpm</span></div>
+        <div class="stat-sub">Breaths per minute</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="two-col">
+      <div class="card fade-in">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--purple);margin-bottom:0.2rem;">Recovery Trend</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;">Last 7 days</div>
+        <div class="bar-chart-wrap" id="recoveryChart"></div>
+      </div>
+      <div class="card fade-in">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--purple);margin-bottom:0.2rem;">Sleep Duration</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;">Last 7 nights (hours)</div>
+        <div class="bar-chart-wrap" id="sleepChart"></div>
+      </div>
+    </div>
+
+    <!-- Sleep breakdown -->
+    <div class="card fade-in" style="margin-bottom:1.5rem;">
+      <div style="font-size:0.82rem;font-weight:700;color:var(--purple);margin-bottom:0.2rem;">Sleep Stage Breakdown</div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;">Deep · REM · Light · Awake</div>
+      <div class="sleep-rows" id="sleepRows"></div>
+    </div>
+  </div>
+
+  <!-- DAILY REPORT VIEW -->
+  <div class="view" id="view-report">
+    <div id="reportLoading" class="loading" style="min-height:40vh;"><div class="spinner"></div><p>Generating your daily report...</p></div>
+    <div id="reportContent" class="hidden">
+      <div class="report-header fade-in">
+        <div class="report-date" id="reportDate"></div>
+        <div class="report-title">Daily Health Report — <span id="reportName"></span></div>
+        <div class="report-sub">Your personalized AI health summary powered by WHOOP data</div>
+      </div>
+      <div class="report-grid" id="reportGrid"></div>
+      <div id="reportInsights"></div>
+    </div>
+  </div>
+
+  <!-- ANOMALY MONITOR VIEW -->
+  <div class="view" id="view-anomalies">
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div>
+        <div class="section-label-tag">Baseline Intelligence</div>
+        <div class="section-title">Anomaly Monitor</div>
+      </div>
+    </div>
+    <div id="anomalyLoading" class="loading" style="min-height:40vh;"><div class="spinner"></div><p>Analyzing your baseline...</p></div>
+    <div id="anomalyContent" class="hidden">
+      <div class="card fade-in" style="margin-bottom:1.5rem;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--purple);margin-bottom:1rem;">Your 7-Day Baseline</div>
+        <div class="three-col" id="baselineGrid"></div>
+      </div>
+      <div class="section-header">
+        <div class="section-bar"></div>
+        <div><div class="section-title">Detected Deviations</div></div>
+      </div>
+      <div id="anomalyList"></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE VIEW -->
+  <div class="view" id="view-timeline">
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div>
+        <div class="section-label-tag">Activity Log</div>
+        <div class="section-title">Health Timeline</div>
+      </div>
+    </div>
+    <div class="card fade-in">
+      <div class="timeline" id="timelineList"></div>
+    </div>
+  </div>
+
+  <!-- CARE TEAM VIEW -->
+  <div class="view" id="view-contacts">
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div>
+        <div class="section-label-tag">Emergency Escalation</div>
+        <div class="section-title">Care Team</div>
+      </div>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">These contacts are notified in order when an emergency is detected. Edit to customize your escalation chain.</p>
+    <div class="contacts-grid" id="contactsGrid"></div>
+  </div>
+
+  <!-- EMERGENCY VIEW -->
+  <div class="view" id="view-emergency">
+    <div class="emergency-container">
+      <div id="emergencyActive">
+        <div class="emergency-header fade-in">
+          <div class="emergency-badge">
+            <div class="emergency-badge-dot"></div>
+            Emergency Detected
+          </div>
+          <div class="emergency-title">Fall Detected — Your Ring</div>
+          <div class="emergency-sub">No movement for 45 sec · Heart rate spike detected</div>
+        </div>
+
+        <div class="card fade-in" style="margin-bottom:1rem;text-align:left;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">Location</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text);">📍 Last known location</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:0.2rem;">Based on last sync · 0.3 mi from home</div>
+        </div>
+
+        <div class="countdown-wrap fade-in">
+          <div class="countdown-label">911 calling automatically in</div>
+          <div class="countdown-timer" id="countdownTimer">0:30</div>
+          <div class="countdown-bar">
+            <div class="countdown-fill" id="countdownFill" style="width:100%"></div>
+          </div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Cancel below if this is not an emergency</div>
+        </div>
+
+        <div class="emergency-actions fade-in">
+          <button class="emergency-btn btn-911" onclick="triggerCall911()">
+            <div class="emergency-btn-icon">📞</div>
+            <div>
+              <div>Call 911 Now</div>
+              <div style="font-size:0.75rem;opacity:0.8;font-weight:400;">Dispatch emergency services immediately</div>
+            </div>
+          </button>
+          <button class="emergency-btn btn-contact" onclick="callEmergencyContact()">
+            <div class="emergency-btn-icon">👤</div>
+            <div>
+              <div>Call Emergency Contact</div>
+              <div style="font-size:0.75rem;color:var(--muted);font-weight:400;">Notify family before 911 is called</div>
+            </div>
+          </button>
+          <button class="emergency-btn btn-cancel" onclick="cancelEmergency()">
+            <div class="emergency-btn-icon">✋</div>
+            <div>
+              <div>Cancel — Not an Emergency</div>
+              <div style="font-size:0.75rem;opacity:0.7;font-weight:400;">I'm okay, dismiss this alert</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="emergency-resolved" id="emergencyResolved">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;">✅</div>
+        <h2>Alert Dismissed</h2>
+        <p id="resolvedMsg">The emergency alert has been cancelled. Stay safe.</p>
+      </div>
+
+      <div style="text-align:center;margin-top:2rem;">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">For demonstration purposes</div>
+        <button class="test-emergency-btn" onclick="startEmergencyDemo()">🔴 Trigger Demo Emergency</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page -->
+<script>
+// ── UTILS ──────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function msToHours(ms) {
+  return ((ms || 0) / 3600000).toFixed(1);
+}
+function dayLabel(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short' });
+}
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function recoveryColor(s) {
+  if (s >= 67) return '#16a34a';
+  if (s >= 34) return '#d97706';
+  return '#dc2626';
+}
+function recoveryPill(s) {
+  if (s >= 67) return 'pill-green';
+  if (s >= 34) return 'pill-yellow';
+  return 'pill-red';
+}
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+// ── NAV TABS ───────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', e => {
+    e.preventDefault();
+    const v = tab.dataset.view;
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    $(('view-' + v)).classList.add('active');
+    if (v === 'report') loadReport();
+    if (v === 'anomalies') loadAnomalies();
+    if (v === 'timeline') buildTimeline();
+    if (v === 'contacts') buildContacts();
+    if (v === 'emergency') initEmergency();
+  });
+});
+
+// ── BAR CHART ──────────────────────────────────────────────────
+function renderBarChart(id, data, maxVal, colorFn) {
+  const el = $(id);
+  if (!el) return;
+  el.innerHTML = '';
+  const max = Math.max(...data.map(d => d.val || 0), maxVal || 1);
+  data.forEach(d => {
+    const pct = Math.max(4, ((d.val || 0) / max) * 100);
+    const div = document.createElement('div');
+    div.className = 'bar-col';
+    div.innerHTML = `<div class="bar" style="height:${pct}%;background:${colorFn(d.val)};"></div><div class="bar-day">${d.label}</div>`;
+    el.appendChild(div);
+  });
+}
+
+// ── RECOVERY RING ──────────────────────────────────────────────
+function animateRing(score) {
+  const circ = 232.5;
+  const offset = circ - (score / 100) * circ;
+  const color = recoveryColor(score);
+  const ring = $('recoveryRing');
+  const topBar = $('recoveryTopBar');
+  const txt = $('recoveryRingText');
+  if (ring) { ring.style.stroke = color; setTimeout(() => { ring.style.strokeDashoffset = offset; }, 80); }
+  if (topBar) topBar.style.background = color;
+  if (txt) { txt.textContent = score + '%'; txt.setAttribute('fill', color); }
+}
+
+// ── GLOBAL STATE ───────────────────────────────────────────────
+let dashData = null;
+
+// ── LOAD DASHBOARD ─────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/dashboard');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    dashData = data;
+
+    const { profile, cycles, sleep } = data;
+    const cycleRecords = cycles.records || [];
+    const sleepRecords = sleep.records || [];
+
+    // ── Profile
+    const first = profile.first_name || 'User';
+    $('navAvatar').textContent = first[0].toUpperCase();
+    $('navName').textContent = first;
+    $('dashGreeting').textContent = greeting() + ', ' + first;
+
+    // ── Recovery (from merged cycle.recovery)
+    // Data shape: cycle.recovery = { recovery_score, resting_heart_rate, hrv_rmssd_milli, respiratory_rate, spo2_percentage }
+    const latestCycle = cycleRecords[0] || {};
+    const rec = latestCycle.recovery || {};
+    const recScore = rec.recovery_score != null ? Math.round(rec.recovery_score) : null;
+
+    if (recScore != null) {
+      animateRing(recScore);
+      $('recoveryVal').innerHTML = recScore + '<span class="stat-unit">%</span>';
+      $('recoveryVal').style.color = recoveryColor(recScore);
+      $('recoveryHrv').textContent = 'HRV: ' + Math.round(rec.hrv_rmssd_milli || 0) + 'ms';
+      $('recoveryRhr').textContent = 'RHR: ' + Math.round(rec.resting_heart_rate || 0) + ' bpm';
+      $('recoveryResp').textContent = 'SpO2: ' + (rec.spo2_percentage ? rec.spo2_percentage.toFixed(1) : '—') + '%';
+      if (recScore < 34) {
+        $('alertStrip').classList.remove('hidden');
+        $('alertText').textContent = 'Low recovery alert (' + recScore + '%). Rest and light activity recommended today.';
+      }
+    } else {
+      $('recoveryVal').innerHTML = '—';
+      $('recoveryHrv').textContent = 'HRV: —';
+      $('recoveryRhr').textContent = 'RHR: —';
+    }
+
+    // ── Respiratory rate from sleep (since rec doesn't have it in this account)
+    const latestSleep = sleepRecords[0] || {};
+    const sleepScore = latestSleep.score || {};
+    const respRate = sleepScore.respiratory_rate;
+    $('respVal').innerHTML = (respRate ? respRate.toFixed(1) : '—') + '<span class="stat-unit">rpm</span>';
+
+    // ── Strain from cycle.score
+    const cycleScore = latestCycle.score || {};
+    $('strainVal').innerHTML = (cycleScore.strain ? cycleScore.strain.toFixed(1) : '—') + '<span class="stat-unit">/21</span>';
+    $('strainCal').textContent = 'Calories: ' + Math.round((cycleScore.kilojoule || 0) * 0.239) + ' kcal';
+
+    // ── Sleep from sleep.score + sleep.score.stage_summary
+    const stageSummary = sleepScore.stage_summary || {};
+    const sleepPerf = sleepScore.sleep_performance_percentage;
+    const sleepEff = sleepScore.sleep_efficiency_percentage;
+    const totalBedMs = stageSummary.total_in_bed_time_milli || 0;
+    $('sleepVal').innerHTML = (sleepPerf != null ? Math.round(sleepPerf) : '—') + '<span class="stat-unit">%</span>';
+    $('sleepDur').textContent = 'Duration: ' + msToHours(totalBedMs) + 'h';
+    $('sleepEff').textContent = 'Efficiency: ' + (sleepEff ? Math.round(sleepEff) : '—') + '%';
+
+    // ── Recovery chart (7 days)
+    const recChartData = cycleRecords.slice(0, 7).reverse().map(c => ({
+      val: c.recovery ? Math.round(c.recovery.recovery_score || 0) : 0,
+      label: dayLabel(c.start)
+    }));
+    renderBarChart('recoveryChart', recChartData, 100, recoveryColor);
+
+    // ── Sleep duration chart (7 days) — from stage_summary
+    const sleepChartData = sleepRecords.slice(0, 7).reverse().map(s => ({
+      val: parseFloat(msToHours((s.score && s.score.stage_summary) ? s.score.stage_summary.total_in_bed_time_milli : 0)),
+      label: dayLabel(s.start)
+    }));
+    renderBarChart('sleepChart', sleepChartData, 10, () => '#2563eb');
+
+    // ── Sleep breakdown rows
+    const rowsEl = $('sleepRows');
+    rowsEl.innerHTML = '';
+    sleepRecords.slice(0, 5).forEach(s => {
+      const sc = s.score || {};
+      const stg = sc.stage_summary || {};
+      const total = stg.total_in_bed_time_milli || 1;
+      const deep  = Math.round((stg.total_slow_wave_sleep_time_milli || 0) / total * 100);
+      const rem   = Math.round((stg.total_rem_sleep_time_milli || 0) / total * 100);
+      const light = Math.round((stg.total_light_sleep_time_milli || 0) / total * 100);
+      const wake  = Math.round((stg.total_awake_time_milli || 0) / total * 100);
+      const perf  = Math.round(sc.sleep_performance_percentage || 0);
+      const row = document.createElement('div');
+      row.className = 'sleep-row';
+      row.innerHTML =
+        '<span style="color:var(--muted);font-size:0.72rem;">' + formatDate(s.start) + '</span>' +
+        '<span style="font-weight:600;">' + msToHours(stg.total_in_bed_time_milli || 0) + 'h</span>' +
+        '<div class="sleep-stage-bar">' +
+          '<div style="width:' + deep  + '%;background:#6d28d9;" title="Deep ' + deep + '%"></div>' +
+          '<div style="width:' + rem   + '%;background:#2563eb;" title="REM ' + rem + '%"></div>' +
+          '<div style="width:' + light + '%;background:#94a3b8;" title="Light ' + light + '%"></div>' +
+          '<div style="width:' + wake  + '%;background:#e2e8f0;" title="Awake ' + wake + '%"></div>' +
+        '</div>' +
+        '<span class="score-pill ' + recoveryPill(perf) + '">' + perf + '%</span>';
+      rowsEl.appendChild(row);
+    });
+
+    // ── Show dashboard
+    $('loadingState').classList.add('hidden');
+    $('view-dashboard').classList.add('active');
+    $('syncBadge').textContent = 'Synced ' + new Date().toLocaleTimeString();
+
+  } catch (err) {
+    console.error('loadDashboard error:', err);
+    $('loadingState').innerHTML =
+      '<div style="text-align:center;">' +
+        '<p style="color:#dc2626;font-size:1rem;margin-bottom:0.5rem;">Failed to load: ' + err.message + '</p>' +
+        '<a href="/" style="color:var(--purple);font-size:0.85rem;">← Reconnect WHOOP</a>' +
+      '</div>';
+  }
+}
+
+// ── DAILY REPORT ───────────────────────────────────────────────
+let reportLoaded = false;
+async function loadReport() {
+  if (reportLoaded) return;
+  try {
+    const data = await fetch('/api/report').then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    reportLoaded = true;
+
+    $('reportDate').textContent = data.date;
+    $('reportName').textContent = data.name || 'User';
+
+    const metrics = [
+      { val: data.recovery != null ? data.recovery + '%' : '—', lbl: 'Recovery Score' },
+      { val: data.hrv != null ? data.hrv + 'ms' : '—', lbl: 'HRV' },
+      { val: data.rhr != null ? data.rhr + ' bpm' : '—', lbl: 'Resting HR' },
+      { val: data.sleepHours != null ? data.sleepHours + 'h' : '—', lbl: 'Sleep Duration' },
+      { val: data.sleepPerf != null ? data.sleepPerf + '%' : '—', lbl: 'Sleep Performance' },
+      { val: data.strain || '—', lbl: 'Day Strain' },
+      { val: data.avgRecovery != null ? data.avgRecovery + '%' : '—', lbl: '7-Day Avg Recovery' },
+      { val: data.avgSleep != null ? data.avgSleep + 'h' : '—', lbl: '7-Day Avg Sleep' },
+    ];
+
+    $('reportGrid').innerHTML = metrics.map(m =>
+      '<div class="report-metric"><div class="report-metric-val">' + m.val + '</div><div class="report-metric-lbl">' + m.lbl + '</div></div>'
+    ).join('');
+
+    const rs = data.recovery || 0;
+    const recStatus = rs >= 67 ? 'strong' : rs >= 34 ? 'moderate' : 'low';
+    const sleepStatus = (data.sleepPerf || 0) >= 80 ? 'excellent' : (data.sleepPerf || 0) >= 60 ? 'adequate' : 'below average';
+    const diff = (data.recovery || 0) - (data.avgRecovery || 0);
+    const trendWord = diff > 5 ? 'above' : diff < -5 ? 'below' : 'in line with';
+
+    const insights = [
+      { title: '📊 Recovery Summary', text: 'Your recovery today is ' + rs + '% — ' + recStatus + ' overall. This is ' + trendWord + ' your 7-day average of ' + data.avgRecovery + '%. ' + (rs < 34 ? 'Prioritize rest today.' : rs >= 67 ? 'Your body is primed — great day to push hard.' : 'Light to moderate activity is appropriate.') },
+      { title: '🌙 Sleep Analysis', text: 'You got ' + data.sleepHours + ' hours of sleep with ' + sleepStatus + ' performance (' + data.sleepPerf + '%). Respiratory rate was ' + data.respiratory + ' breaths per minute.' },
+      { title: '❤️ Cardiovascular', text: 'HRV: ' + data.hrv + 'ms. Resting heart rate: ' + data.rhr + ' bpm — ' + ((data.rhr || 0) < 60 ? 'excellent cardiovascular fitness.' : (data.rhr || 0) < 75 ? 'within a healthy range.' : 'slightly elevated, monitor for illness or overtraining.') },
+      { title: '📅 Weekly Trend', text: '7-day average recovery: ' + data.avgRecovery + '%. Average sleep: ' + data.avgSleep + ' hours per night. ' + ((data.avgRecovery || 0) >= 60 ? 'Consistent strong recovery.' : 'Room to improve sleep or stress management.') }
+    ];
+
+    $('reportInsights').innerHTML = insights.map(i =>
+      '<div class="report-insight fade-in"><div class="report-insight-title">' + i.title + '</div><p>' + i.text + '</p></div>'
+    ).join('');
+
+    $('reportLoading').classList.add('hidden');
+    $('reportContent').classList.remove('hidden');
+  } catch (err) {
+    $('reportLoading').innerHTML = '<p style="color:#dc2626;text-align:center;">Failed: ' + err.message + '</p>';
+  }
+}
+
+// ── ANOMALY MONITOR ────────────────────────────────────────────
+let anomalyLoaded = false;
+async function loadAnomalies() {
+  if (anomalyLoaded) return;
+  try {
+    const data = await fetch('/api/anomalies').then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    anomalyLoaded = true;
+    const b = data.baseline || {};
+
+    $('baselineGrid').innerHTML = [
+      { label: 'Baseline HRV', val: (b.hrv || '—') + 'ms', icon: '💓' },
+      { label: 'Baseline RHR', val: (b.rhr || '—') + ' bpm', icon: '❤️' },
+      { label: 'Baseline Recovery', val: (b.recovery || '—') + '%', icon: '⚡' },
+      { label: 'Baseline Sleep', val: (b.sleep || '—') + '%', icon: '🌙' },
+    ].map(m =>
+      '<div class="report-metric"><div style="font-size:1.5rem;margin-bottom:0.3rem;">' + m.icon + '</div>' +
+      '<div class="report-metric-val" style="font-size:1.4rem;">' + m.val + '</div>' +
+      '<div class="report-metric-lbl">' + m.label + '</div></div>'
+    ).join('');
+
+    const list = $('anomalyList');
+    if (!data.anomalies || !data.anomalies.length) {
+      list.innerHTML = '<div class="anomaly-card positive fade-in" style="justify-content:center;text-align:center;padding:2rem;"><div><div style="font-size:2rem;margin-bottom:0.5rem;">✅</div><div class="anomaly-msg">All metrics within normal baseline range</div><div class="anomaly-meta">No deviations detected in the last 24 hours</div></div></div>';
+    } else {
+      list.innerHTML = data.anomalies.map(a =>
+        '<div class="anomaly-card ' + a.severity + ' fade-in"><div class="anomaly-dot"></div><div><div class="anomaly-msg">' + a.message + '</div><div class="anomaly-meta">' + a.type + ' · Current: ' + a.current + a.unit + ' vs Baseline: ' + a.baseline + a.unit + '</div></div></div>'
+      ).join('');
+    }
+
+    $('anomalyLoading').classList.add('hidden');
+    $('anomalyContent').classList.remove('hidden');
+  } catch (err) {
+    $('anomalyLoading').innerHTML = '<p style="color:#dc2626;text-align:center;">Failed: ' + err.message + '</p>';
+  }
+}
+
+// ── TIMELINE ───────────────────────────────────────────────────
+function buildTimeline() {
+  if (!dashData) return;
+  const { cycles, sleep } = dashData;
+  const events = [];
+
+  (sleep.records || []).slice(0, 7).forEach(s => {
+    const sc = s.score || {};
+    const stg = sc.stage_summary || {};
+    events.push({
+      time: new Date(s.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      date: formatDate(s.start),
+      title: '🌙 Sleep — ' + msToHours(stg.total_in_bed_time_milli || 0) + 'h',
+      desc: 'Performance: ' + Math.round(sc.sleep_performance_percentage || 0) + '% · REM: ' + msToHours(stg.total_rem_sleep_time_milli || 0) + 'h',
+      color: '#2563eb',
+      ts: new Date(s.start).getTime()
+    });
+  });
+
+  (cycles.records || []).slice(0, 7).forEach(c => {
+    const cs = c.score || {};
+    const rec = c.recovery;
+    if (rec) {
+      events.push({
+        time: new Date(c.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+        date: formatDate(c.start),
+        title: '💚 Recovery — ' + Math.round(rec.recovery_score || 0) + '%',
+        desc: 'HRV: ' + Math.round(rec.hrv_rmssd_milli || 0) + 'ms · RHR: ' + Math.round(rec.resting_heart_rate || 0) + ' bpm · SpO2: ' + (rec.spo2_percentage ? rec.spo2_percentage.toFixed(1) : '—') + '%',
+        color: recoveryColor(Math.round(rec.recovery_score || 0)),
+        ts: new Date(c.start).getTime()
+      });
+    }
+    if (cs.strain) {
+      events.push({
+        time: new Date(c.end || c.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+        date: formatDate(c.end || c.start),
+        title: '⚡ Strain — ' + cs.strain.toFixed(1) + '/21',
+        desc: 'Calories: ' + Math.round((cs.kilojoule || 0) * 0.239) + ' kcal · Avg HR: ' + (cs.average_heart_rate || '—') + ' bpm',
+        color: '#d97706',
+        ts: new Date(c.end || c.start).getTime()
+      });
+    }
+  });
+
+  events.sort((a, b) => b.ts - a.ts);
+  $('timelineList').innerHTML = events.map(e =>
+    '<div class="timeline-item">' +
+      '<div class="timeline-time">' + e.date + '<br/>' + e.time + '</div>' +
+      '<div class="timeline-dot-wrap"><div class="timeline-dot" style="background:' + e.color + '"></div></div>' +
+      '<div class="timeline-content"><div class="timeline-title">' + e.title + '</div><div class="timeline-desc">' + e.desc + '</div></div>' +
+    '</div>'
+  ).join('');
+}
+
+// ── CARE TEAM ──────────────────────────────────────────────────
+const contacts = [
+  { name: 'Sarah (You)', role: 'Primary Caregiver', phone: '(253) 555-0142', priority: 1, initial: 'S' },
+  { name: 'Dr. Patricia Chen', role: 'Primary Care Physician', phone: '(206) 555-0198', priority: 2, initial: 'P' },
+  { name: 'Michael Johnson', role: 'Secondary Contact', phone: '(425) 555-0173', priority: 3, initial: 'M' },
+];
+function buildContacts() {
+  $('contactsGrid').innerHTML = contacts.map(c =>
+    '<div class="contact-card fade-in">' +
+      '<div class="contact-avatar">' + c.initial + '</div>' +
+      '<div class="contact-name">' + c.name + '</div>' +
+      '<div class="contact-role">' + c.role + '</div>' +
+      '<div class="contact-phone">📞 ' + c.phone + '</div>' +
+      '<div class="priority-badge priority-' + c.priority + '">Priority ' + c.priority + '</div>' +
+    '</div>'
+  ).join('') + '<div class="add-contact-btn fade-in" onclick="alert(\'Contact management coming soon!\')">+ Add Emergency Contact</div>';
+}
+
+// ── EMERGENCY ──────────────────────────────────────────────────
+let countdownInterval = null;
+let countdownSecs = 30;
+
+function initEmergency() {
+  $('emergencyActive').style.display = 'block';
+  $('emergencyResolved').classList.remove('show');
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+  $('countdownTimer').textContent = '0:30';
+  $('countdownFill').style.width = '100%';
+}
+
+function startEmergencyDemo() {
+  initEmergency();
+  countdownSecs = 30;
+  countdownInterval = setInterval(() => {
+    countdownSecs--;
+    $('countdownTimer').textContent = '0:' + String(countdownSecs).padStart(2, '0');
+    $('countdownFill').style.width = ((countdownSecs / 30) * 100) + '%';
+    if (countdownSecs <= 0) { clearInterval(countdownInterval); triggerCall911(); }
+  }, 1000);
+}
+
+function triggerCall911() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  $('emergencyActive').style.display = 'none';
+  $('emergencyResolved').classList.add('show');
+  $('resolvedMsg').textContent = '911 contacted. Emergency services dispatched. All emergency contacts have been notified.';
+}
+
+function callEmergencyContact() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  alert('📞 Calling Sarah (Primary Caregiver) — (253) 555-0142');
+}
+
+function cancelEmergency() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  $('emergencyActive').style.display = 'none';
+  $('emergencyResolved').classList.add('show');
+  $('resolvedMsg').textContent = 'Alert dismissed. You can trigger a new emergency from this screen anytime.';
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+loadDashboard();
+setInterval(loadDashboard, 5 * 60 * 1000);
+</script>
+</body>
+</html>
