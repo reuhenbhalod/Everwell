@@ -150,7 +150,10 @@
     <div class="logo">Ever<span>Well</span></div>
     <div class="tagline">Detecting before Disaster</div>
     <div class="gold-line"></div>
-    <div class="error-msg" id="errorMsg">Connection failed. Please try again.</div>
+    <div class="error-msg" id="errorMsg">
+      <div id="errorTitle">Connection failed. Please try again.</div>
+      <div id="errorDetail" style="margin-top:0.4rem;font-size:0.75rem;opacity:0.85;"></div>
+    </div>
     <a href="/auth/whoop" class="connect-btn">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -181,9 +184,23 @@
     </div>
   </div>
   <script>
-    if (new URLSearchParams(window.location.search).get('error')) {
+    (function () {
+      var qp = new URLSearchParams(window.location.search);
+      var err = qp.get('error');
+      var detail = qp.get('detail');
+      if (!err) return;
+      var titles = {
+        auth_failed:    'WHOOP rejected the sign-in.',
+        token_failed:   'WHOOP rejected the token exchange.',
+        config_missing: 'Server is missing required environment variables.'
+      };
+      document.getElementById('errorTitle').textContent =
+        (titles[err] || ('Connection failed: ' + err)) + ' Please try again.';
+      if (detail) {
+        document.getElementById('errorDetail').textContent = 'Detail: ' + detail;
+      }
       document.getElementById('errorMsg').classList.add('show');
-    }
+    })();
   </script>
 </body>
 </html>

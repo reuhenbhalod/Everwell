@@ -53,9 +53,22 @@ app.get('/auth/whoop', (req, res) => {
 });
 
 app.get('/callback', async (req, res) => {
-  const { code, error } = req.query;
-  if (error || !code) return res.redirect('/?error=auth_failed');
+  const { code, error, error_description } = req.query;
+  if (error || !code) {
+    console.error('Auth failed at WHOOP:', error, error_description);
+    const detail = encodeURIComponent(error_description || error || 'no code');
+    return res.redirect(`/?error=auth_failed&detail=${detail}`);
+  }
   try {
+    const missing = [];
+    if (!WHOOP_CLIENT_ID)     missing.push('WHOOP_CLIENT_ID');
+    if (!WHOOP_CLIENT_SECRET) missing.push('WHOOP_CLIENT_SECRET');
+    if (!REDIRECT_URI)        missing.push('REDIRECT_URI');
+    if (missing.length) {
+      console.error('Missing env vars:', missing.join(', '));
+      return res.redirect(`/?error=config_missing&detail=${encodeURIComponent(missing.join(','))}`);
+    }
+
     const response = await axios.post(WHOOP_TOKEN_URL,
       new URLSearchParams({
         grant_type: 'authorization_code',
@@ -69,8 +82,12 @@ app.get('/callback', async (req, res) => {
     tokenStore = { ...response.data, issued_at: Date.now() };
     res.redirect('/dashboard.html');
   } catch (err) {
-    console.error('Token exchange failed:', err.response?.data || err.message);
-    res.redirect('/?error=token_failed');
+    const whoopErr = err.response?.data;
+    console.error('Token exchange failed:', whoopErr || err.message);
+    const detail = encodeURIComponent(
+      (whoopErr && (whoopErr.error_description || whoopErr.error)) || err.message || 'unknown'
+    );
+    res.redirect(`/?error=token_failed&detail=${detail}`);
   }
 });
 
