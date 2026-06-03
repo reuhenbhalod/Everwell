@@ -84,6 +84,78 @@
       color: rgba(255,255,255,0.5);
     }
 
+    /* APPLE HEALTH BUTTON (visible only in native iOS shell) */
+    .health-btn {
+      display: none;
+      background: var(--gold);
+      color: var(--purple);
+      border: 0;
+      border-radius: 999px;
+      padding: 0.45rem 0.95rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .health-btn:hover { background: var(--gold-light); }
+    .health-btn.connected {
+      background: var(--green-bg);
+      color: var(--green);
+    }
+    body.is-native .health-btn { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+    /* APPLE HEALTH CARD */
+    .health-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      display: none;
+    }
+    .health-card.show { display: block; }
+    .health-card-top {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: var(--gold);
+    }
+    .health-card-title {
+      font-weight: 700; color: var(--purple);
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .health-card-title .badge {
+      font-size: 0.65rem; padding: 0.15rem 0.5rem;
+      background: var(--lavender); color: var(--purple);
+      border-radius: 999px; font-weight: 600;
+    }
+    .health-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.85rem;
+    }
+    .health-metric {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 0.7rem 0.85rem;
+    }
+    .health-metric-lbl {
+      font-size: 0.7rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .health-metric-val {
+      font-size: 1.35rem; font-weight: 700;
+      color: var(--purple); margin-top: 0.15rem;
+    }
+    .health-metric-unit {
+      font-size: 0.7rem; color: var(--muted); margin-left: 0.2rem;
+    }
+    .health-updated {
+      font-size: 0.7rem; color: var(--muted); margin-top: 0.75rem;
+    }
+
     /* GOLD BOTTOM BAR */
     nav::after {
       content: '';
@@ -389,6 +461,10 @@
     </div>
   </div>
   <div class="nav-right">
+    <button class="health-btn" id="healthBtn" type="button" onclick="connectAppleHealth()">
+      <span id="healthBtnIcon">+</span>
+      <span id="healthBtnLabel">Connect Apple Health</span>
+    </button>
     <span class="sync-badge" id="syncBadge">Syncing...</span>
     <div class="nav-user">
       <div class="nav-avatar" id="navAvatar">?</div>
@@ -418,6 +494,17 @@
         <div class="section-label-tag">Live Health Monitor</div>
         <div class="section-title" id="dashGreeting">Good morning</div>
       </div>
+    </div>
+
+    <!-- Apple Health (native shell only) -->
+    <div class="health-card" id="healthCard">
+      <div class="health-card-top"></div>
+      <div class="health-card-title">
+        Apple Health
+        <span class="badge">iPhone &amp; Apple Watch</span>
+      </div>
+      <div class="health-metrics" id="healthMetrics"></div>
+      <div class="health-updated" id="healthUpdated"></div>
     </div>
 
     <!-- Top stats -->
@@ -1015,9 +1102,135 @@ function cancelEmergency() {
   $('resolvedMsg').textContent = 'Alert dismissed. You can trigger a new emergency from this screen anytime.';
 }
 
+// ── APPLE HEALTH (Capacitor native shell) ─────────────────────
+function isNativeShell() {
+  return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+}
+
+function healthPlugin() {
+  return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.HealthPlugin;
+}
+
+const HEALTH_PERMS = [
+  'READ_HRV',
+  'READ_RESTING_HEART_RATE',
+  'READ_HEART_RATE',
+  'READ_RESPIRATORY_RATE',
+  'READ_OXYGEN_SATURATION',
+  'READ_SLEEP'
+];
+
+window.everwellHealth = {};
+
+async function connectAppleHealth() {
+  const plugin = healthPlugin();
+  if (!plugin) {
+    alert('Apple Health is only available inside the EverWell iOS app.');
+    return;
+  }
+  const btn = $('healthBtn');
+  const label = $('healthBtnLabel');
+  try {
+    btn.disabled = true;
+    label.textContent = 'Connecting...';
+    const avail = await plugin.isHealthAvailable();
+    if (!avail || !avail.available) {
+      alert('Apple Health is not available on this device.');
+      label.textContent = 'Connect Apple Health';
+      btn.disabled = false;
+      return;
+    }
+    await plugin.requestHealthPermissions({ permissions: HEALTH_PERMS });
+    await refreshAppleHealth();
+    btn.classList.add('connected');
+    $('healthBtnIcon').textContent = '✓';
+    label.textContent = 'Apple Health Connected';
+    btn.disabled = false;
+  } catch (err) {
+    console.error('Apple Health connect failed:', err);
+    alert('Could not connect to Apple Health: ' + (err && err.message ? err.message : err));
+    label.textContent = 'Connect Apple Health';
+    btn.disabled = false;
+  }
+}
+
+async function refreshAppleHealth() {
+  const plugin = healthPlugin();
+  if (!plugin) return;
+  const types = [
+    { key: 'hrv',         dataType: 'hrv',                 label: 'HRV',          unit: 'ms'  },
+    { key: 'rhr',         dataType: 'resting-heart-rate',  label: 'Resting HR',   unit: 'bpm' },
+    { key: 'heartRate',   dataType: 'heart-rate',          label: 'Heart Rate',   unit: 'bpm' },
+    { key: 'respiratory', dataType: 'respiratory-rate',    label: 'Respiratory',  unit: '/min'},
+    { key: 'spo2',        dataType: 'oxygen-saturation',   label: 'Blood Oxygen', unit: '%'   },
+    { key: 'sleep',       dataType: 'sleep',               label: 'Sleep',        unit: 'h'   }
+  ];
+
+  const results = await Promise.all(types.map(async t => {
+    try {
+      const r = await plugin.queryLatestSample({ dataType: t.dataType });
+      return { ...t, sample: r };
+    } catch (e) {
+      return { ...t, sample: null, error: e && e.message };
+    }
+  }));
+
+  const container = $('healthMetrics');
+  container.innerHTML = '';
+  let mostRecent = null;
+
+  results.forEach(r => {
+    const v = r.sample && r.sample.value;
+    let display = '—';
+    if (v != null) {
+      if (r.key === 'spo2') {
+        // HealthKit returns 0–1; convert to percentage
+        display = (v * 100).toFixed(0);
+      } else if (r.key === 'sleep') {
+        // Sleep value is in minutes per the plugin doc; convert to hours
+        display = (v / 60).toFixed(1);
+      } else if (r.key === 'hrv') {
+        display = Math.round(v).toString();
+      } else if (r.key === 'rhr' || r.key === 'heartRate') {
+        display = Math.round(v).toString();
+      } else {
+        display = (typeof v === 'number') ? v.toFixed(1) : String(v);
+      }
+      window.everwellHealth[r.key] = v;
+    }
+
+    if (r.sample && r.sample.endDate) {
+      const t = new Date(r.sample.endDate).getTime();
+      if (!mostRecent || t > mostRecent) mostRecent = t;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'health-metric';
+    div.innerHTML =
+      '<div class="health-metric-lbl">' + r.label + '</div>' +
+      '<div class="health-metric-val">' + display +
+      '<span class="health-metric-unit">' + r.unit + '</span></div>';
+    container.appendChild(div);
+  });
+
+  $('healthCard').classList.add('show');
+  if (mostRecent) {
+    $('healthUpdated').textContent =
+      'Latest reading: ' + new Date(mostRecent).toLocaleString();
+  }
+}
+
+function initHealthShellUI() {
+  if (isNativeShell()) {
+    document.body.classList.add('is-native');
+  }
+}
+initHealthShellUI();
+
 // ── INIT ───────────────────────────────────────────────────────
 loadDashboard();
 setInterval(loadDashboard, 5 * 60 * 1000);
+setInterval(() => { if (isNativeShell() && healthPlugin()) refreshAppleHealth().catch(() => {}); }, 5 * 60 * 1000);
 </script>
 </body>
 </html>
