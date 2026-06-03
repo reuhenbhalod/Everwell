@@ -3,7 +3,7 @@
   "appName": "EverWell",
   "webDir": "public",
   "server": {
-    "url": "https://REPLACE_ME.onrender.com",
+    "url": "https://everwell-mt2a.onrender.com",
     "cleartext": false,
     "androidScheme": "https",
     "iosScheme": "https"
