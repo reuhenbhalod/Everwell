@@ -14,8 +14,16 @@ const {
   WHOOP_CLIENT_ID,
   WHOOP_CLIENT_SECRET,
   REDIRECT_URI,
-  PORT = 3000
+  PORT = 3000,
+  RENDER_EXTERNAL_URL
 } = process.env;
+
+// Public base URL: Render injects RENDER_EXTERNAL_URL; otherwise derive from REDIRECT_URI.
+const PUBLIC_URL = RENDER_EXTERNAL_URL
+  || (REDIRECT_URI ? REDIRECT_URI.replace(/\/callback$/, '') : null);
+
+// Default axios timeout — keeps /callback and dashboard fetches from hanging on slow WHOOP responses.
+axios.defaults.timeout = 20000;
 
 const WHOOP_AUTH_URL = 'https://api.prod.whoop.com/oauth/oauth2/auth';
 const WHOOP_TOKEN_URL = 'https://api.prod.whoop.com/oauth/oauth2/token';
@@ -56,7 +64,7 @@ app.get('/callback', async (req, res) => {
         client_id: WHOOP_CLIENT_ID,
         client_secret: WHOOP_CLIENT_SECRET
       }),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 15000 }
     );
     tokenStore = { ...response.data, issued_at: Date.now() };
     res.redirect('/dashboard.html');
@@ -95,6 +103,11 @@ async function whoopGet(path, params = {}) {
 
 app.get('/api/status', (req, res) => {
   res.json({ authenticated: !!tokenStore.access_token });
+});
+
+// Lightweight liveness endpoint for Render health checks and the self-ping keep-alive.
+app.get('/healthz', (req, res) => {
+  res.json({ ok: true, uptime: process.uptime(), ts: Date.now() });
 });
 
 // Full dashboard data
@@ -265,8 +278,20 @@ app.get('/api/anomalies', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  const publicUrl = REDIRECT_URI ? REDIRECT_URI.replace(/\/callback$/, '') : `http://localhost:${PORT}`;
+  const publicUrl = PUBLIC_URL || `http://localhost:${PORT}`;
   console.log(`\nEverWell running on port ${PORT}`);
   console.log(`Public base: ${publicUrl}`);
   console.log(`Connect WHOOP → ${publicUrl}/auth/whoop\n`);
 });
+
+// Self-ping keep-alive: hits /healthz on the public URL every 10 minutes so Render's
+// free-tier 15-minute idle sleep never kicks in. Skipped in local dev (no PUBLIC_URL
+// or localhost), and skipped if we can't derive a public URL.
+if (PUBLIC_URL && !PUBLIC_URL.startsWith('http://localhost')) {
+  const KEEPALIVE_MS = 10 * 60 * 1000;
+  setInterval(() => {
+    axios.get(`${PUBLIC_URL}/healthz`, { timeout: 5000 })
+      .catch(err => console.warn('keep-alive ping failed:', err.message));
+  }, KEEPALIVE_MS);
+  console.log(`Keep-alive enabled (pinging ${PUBLIC_URL}/healthz every ${KEEPALIVE_MS / 60000}m)`);
+}
