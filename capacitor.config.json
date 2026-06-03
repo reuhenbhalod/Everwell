@@ -6,7 +6,12 @@
     "url": "https://everwell-mt2a.onrender.com",
     "cleartext": false,
     "androidScheme": "https",
-    "iosScheme": "https"
+    "iosScheme": "https",
+    "allowNavigation": [
+      "*.whoop.com",
+      "*.prod.whoop.com",
+      "api.prod.whoop.com"
+    ]
   },
   "ios": {
     "contentInset": "always",
