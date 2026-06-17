@@ -47,6 +47,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSHealthShareUsageDescription</key>
 	<string>EverWell reads your Apple Health metrics (HRV, resting heart rate, sleep, respiratory rate, blood oxygen) to build your personalized baseline and surface early warning signs of changes in your health.</string>
 	<key>NSHealthUpdateUsageDescription</key>
