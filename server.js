@@ -15,8 +15,36 @@ const {
   WHOOP_CLIENT_SECRET,
   REDIRECT_URI,
   PORT = 3000,
-  RENDER_EXTERNAL_URL
+  RENDER_EXTERNAL_URL,
+  // Twilio voice — used to place a real automated emergency call to a contact.
+  TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN,
+  TWILIO_FROM_NUMBER,        // the "base number" calls originate from (your Twilio or verified number)
+  EMERGENCY_CONTACT_NUMBER,  // optional fallback number if the dashboard sends a placeholder
+  SENIOR_NAME = 'your family member'
 } = process.env;
+
+// Twilio client is created lazily so the app still boots without voice configured.
+let twilioClient = null;
+function getTwilioClient() {
+  if (twilioClient) return twilioClient;
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) return null;
+  twilioClient = require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+  return twilioClient;
+}
+
+// Strip formatting like "(253) 555-0142" down to digits so we can spot placeholder numbers.
+function normalizeNumber(raw) {
+  if (!raw) return '';
+  const trimmed = String(raw).trim();
+  const plus = trimmed.startsWith('+') ? '+' : '';
+  return plus + trimmed.replace(/[^0-9]/g, '');
+}
+
+// The 555-01xx range is reserved for fiction, so the seeded demo contacts can't be dialed.
+function isPlaceholderNumber(digits) {
+  return /55501\d\d$/.test(digits.replace(/^\+?1/, ''));
+}
 
 // Public base URL: Render injects RENDER_EXTERNAL_URL; otherwise derive from REDIRECT_URI.
 const PUBLIC_URL = RENDER_EXTERNAL_URL
@@ -292,6 +320,56 @@ app.get('/api/anomalies', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Places a real automated voice call to an emergency contact via Twilio.
+// Body: { to: "+14255551234", name: "Michael" }. Falls back to EMERGENCY_CONTACT_NUMBER
+// when the dashboard sends one of the seeded placeholder numbers.
+app.post('/api/call', async (req, res) => {
+  const client = getTwilioClient();
+  if (!client || !TWILIO_FROM_NUMBER) {
+    return res.status(503).json({
+      error: 'voice_not_configured',
+      message: 'Calling is not set up. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER.'
+    });
+  }
+
+  const name = (req.body && req.body.name) || 'your emergency contact';
+  let to = normalizeNumber(req.body && req.body.to);
+
+  // Swap a fake demo number for the real configured contact, if one is set.
+  if (!to || isPlaceholderNumber(to)) {
+    to = normalizeNumber(EMERGENCY_CONTACT_NUMBER);
+  }
+  if (!to) {
+    return res.status(400).json({
+      error: 'no_number',
+      message: 'No callable number. Set a real phone number on the contact or EMERGENCY_CONTACT_NUMBER.'
+    });
+  }
+
+  // Spoken message. Repeated once so a half-distracted listener still catches it.
+  const line = `This is an automated emergency alert from Everwell. ` +
+    `A possible emergency was detected for ${SENIOR_NAME}. ` +
+    `Please check on them right away, or call emergency services.`;
+  const twiml =
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<Response><Pause length="1"/><Say voice="alice">${line}</Say>` +
+    `<Pause length="1"/><Say voice="alice">${line}</Say></Response>`;
+
+  try {
+    const call = await client.calls.create({ to, from: TWILIO_FROM_NUMBER, twiml });
+    console.log(`Emergency call placed to ${name} (${to}): ${call.sid}`);
+    res.json({ ok: true, sid: call.sid, to, name });
+  } catch (err) {
+    console.error('Call failed:', err.message);
+    res.status(500).json({ error: 'call_failed', message: err.message });
+  }
+});
+
+// Reports whether voice calling is configured, so the UI can show the right state.
+app.get('/api/call/status', (req, res) => {
+  res.json({ configured: !!(getTwilioClient() && TWILIO_FROM_NUMBER) });
 });
 
 app.listen(PORT, () => {

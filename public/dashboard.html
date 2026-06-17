@@ -1216,9 +1216,37 @@ function triggerCall911() {
   $('resolvedMsg').textContent = '911 contacted. Emergency services dispatched. All emergency contacts have been notified.';
 }
 
-function callEmergencyContact() {
+async function callEmergencyContact() {
   if (countdownInterval) clearInterval(countdownInterval);
-  alert('📞 Calling Sarah (Primary Caregiver) — (253) 555-0142');
+
+  // Call the highest-priority contact who isn't the caregiver holding the phone.
+  const target = contacts
+    .filter(c => !/\(you\)/i.test(c.name))
+    .sort((a, b) => a.priority - b.priority)[0] || contacts[0];
+
+  $('emergencyActive').style.display = 'none';
+  $('emergencyResolved').classList.add('show');
+  $('resolvedMsg').textContent = '📞 Calling ' + target.name + ' (' + target.phone + ')…';
+
+  try {
+    const res = await fetch('/api/call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: target.phone, name: target.name })
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      $('resolvedMsg').textContent =
+        '✅ Calling ' + target.name + ' now. An automated alert is being read out to them.';
+    } else {
+      $('resolvedMsg').textContent =
+        '⚠️ Could not place the call: ' + (data.message || 'unknown error') +
+        ' — reach ' + target.name + ' at ' + target.phone + '.';
+    }
+  } catch (err) {
+    $('resolvedMsg').textContent =
+      '⚠️ Could not reach the calling service. Call ' + target.name + ' directly at ' + target.phone + '.';
+  }
 }
 
 function cancelEmergency() {
