@@ -473,22 +473,6 @@ everwell/
   SETUP.md                Condensed iPhone setup checklist
 ```
 
-
-## Roadmap
-
-Not built yet, in rough priority order:
-
-- Fall detection with automatic escalation
-- Emergency contact management UI: add contacts, set thresholds and escalation order
-- Caregiver multi-user views: one caregiver and many seniors, and the reverse
-- Voice notes from the ring surfaced in the caregiver app
-- Medication reminders
-- A simplified senior-facing app view
-- A device-agnostic integration layer with planned support for Apple Watch, Garmin, and other
-  health devices
-- The EverWell smart ring hardware itself
-
-
 ## License
 
 Released under the MIT License. See [LICENSE](LICENSE) for the full text.
