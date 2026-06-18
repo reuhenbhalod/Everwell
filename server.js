@@ -20,8 +20,7 @@ const {
   TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN,
   TWILIO_FROM_NUMBER,        // the "base number" calls originate from (your Twilio or verified number)
-  EMERGENCY_CONTACT_NUMBER,  // optional fallback number if the dashboard sends a placeholder
-  SENIOR_NAME = 'your family member'
+  EMERGENCY_CONTACT_NUMBER   // optional fallback number if the dashboard sends a placeholder
 } = process.env;
 
 // Twilio client is created lazily so the app still boots without voice configured.
@@ -349,8 +348,8 @@ app.post('/api/call', async (req, res) => {
   }
 
   // Spoken message. Repeated once so a half-distracted listener still catches it.
-  const line = `This is an automated emergency alert from Everwell. ` +
-    `A possible emergency was detected for ${SENIOR_NAME}. ` +
+  const line = `This is an automated alert from Everwell. ` +
+    `There was an alert with the device wearer. ` +
     `Please check on them right away, or call emergency services.`;
   const twiml =
     `<?xml version="1.0" encoding="UTF-8"?>` +

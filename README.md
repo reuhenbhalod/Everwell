@@ -35,6 +35,8 @@ running on your own devices.
 - Emergency escalation with a 30-second countdown: Call contact, Confirm 911, Cancel
 - A chronological Health Timeline and a priority-ordered Care Team contact list
 - A low-recovery alert banner, plus auto-refresh every 5 minutes
+- Stay-signed-in: if a WHOOP session is already active, the landing screen is skipped and you
+  go straight to the dashboard, so you do not log in again every launch
 
 
 ## How it works
@@ -287,7 +289,6 @@ emergency services, so that stays a manual action.
    TWILIO_AUTH_TOKEN=your_auth_token
    TWILIO_FROM_NUMBER=+12065550100
    EMERGENCY_CONTACT_NUMBER=+14255550173
-   SENIOR_NAME=Eleanor
    ```
 
    - TWILIO_FROM_NUMBER is your Twilio number, the base number the call comes from.
@@ -296,7 +297,6 @@ emergency services, so that stays a manual action.
      Call Emergency Contact the server routes the call to this number instead. Once you put
      real numbers on the contacts in public/dashboard.html, the call goes to whichever
      contact you press.
-   - SENIOR_NAME is the name spoken in the automated message.
 
 3. Test it. Restart the server, or redeploy, then open the Emergency screen, tap Trigger
    Demo Emergency, then tap Call Emergency Contact. The phone should ring within a few
@@ -330,9 +330,9 @@ When you tap Call Emergency Contact, here is the full chain of what happens:
    number to call (your contact), the number to call from (TWILIO_FROM_NUMBER, the base
    number), and a short script of what to say. The script is written in TwiML, which is
    Twilio's instruction format. EverWell sends a Say instruction with the message, repeated
-   once so a distracted listener still catches it. The message is roughly: "This is an
-   automated emergency alert from EverWell. A possible emergency was detected for NAME.
-   Please check on them right away, or call emergency services."
+   once so a distracted listener still catches it. The message is: "This is an automated
+   alert from EverWell. There was an alert with the device wearer. Please check on them
+   right away, or call emergency services."
 
 5. Twilio places the real phone call. Your contact's phone rings, showing the base number as
    the caller ID. When they answer, Twilio's text-to-speech voice reads the message out loud.
@@ -388,7 +388,6 @@ A few things worth knowing:
 - TWILIO_FROM_NUMBER, required for calls. The Twilio base number the call comes from, E.164.
 - EMERGENCY_CONTACT_NUMBER, optional. Real fallback number used when a contact has a
   placeholder number.
-- SENIOR_NAME, optional. Name spoken in the automated emergency message.
 
 
 ## Tech stack

@@ -280,6 +280,22 @@
       }
     }
 
+    // Skip the landing screen when a WHOOP session is already active server-side,
+    // so a logged-in user lands straight on the dashboard instead of logging in again.
+    (function () {
+      var qp = new URLSearchParams(window.location.search);
+      if (qp.get('error')) return; // just bounced back from a failed auth — stay and show it
+      fetch('/api/status', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          if (s && s.authenticated) {
+            try { localStorage.setItem('everwellMode', 'whoop'); } catch (e) {}
+            window.location.replace('/dashboard.html');
+          }
+        })
+        .catch(function () {});
+    })();
+
     (function () {
       var qp = new URLSearchParams(window.location.search);
       var err = qp.get('error');
