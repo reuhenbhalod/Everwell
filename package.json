@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "EverWell WHOOP integration server",
   "main": "server.js",
+  "author": "Abhiram Purohit and Reuhen Bhalod",
+  "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
   },

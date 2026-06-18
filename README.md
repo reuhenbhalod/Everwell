@@ -1,5 +1,40 @@
 # EverWell
 
+> A caregiver dashboard that learns an older adult's personal health baseline from live
+> wearable data, then escalates by automated phone call when something deviates from it.
+
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-backend-000000?logo=express&logoColor=white)
+![WHOOP API v2](https://img.shields.io/badge/WHOOP-API%20v2-FF0026)
+![Capacitor iOS](https://img.shields.io/badge/Capacitor-iOS-119EFF?logo=capacitor&logoColor=white)
+![Twilio](https://img.shields.io/badge/Twilio-voice-F22F46?logo=twilio&logoColor=white)
+![Render](https://img.shields.io/badge/Render-deploy-46E3B7?logo=render&logoColor=white)
+
+**Live deployment:** https://everwell-mt2a.onrender.com (landing page; the dashboard needs a
+WHOOP login to populate with live data)
+
+<!-- HIGH IMPACT: add a screenshot or short GIF of the dashboard here. For anyone viewing this
+     on GitHub it is the single biggest improvement you can make. Drop the file in docs/ and
+     reference it, for example:  ![EverWell dashboard](docs/dashboard.png) -->
+
+## Contents
+
+- [What you get on the dashboard](#what-you-get-on-the-dashboard)
+- [Engineering highlights](#engineering-highlights)
+- [How it works](#how-it-works)
+- [Before you start](#before-you-start)
+- [Part 1: Run the dashboard locally with WHOOP](#part-1-run-the-dashboard-locally-with-whoop)
+- [Part 2: Deploy to the cloud so a phone can reach it](#part-2-deploy-to-the-cloud-so-a-phone-can-reach-it)
+- [Part 3: Run on your iPhone and Apple Watch with Apple Health](#part-3-run-on-your-iphone-and-apple-watch-with-apple-health)
+- [Part 4: Make the emergency call actually ring](#part-4-make-the-emergency-call-actually-ring)
+- [How the calling works](#how-the-calling-works)
+- [Troubleshooting](#troubleshooting)
+- [Environment variables](#environment-variables)
+- [Tech stack](#tech-stack)
+- [Project layout](#project-layout)
+- [Roadmap](#roadmap)
+- [License](#license)
+
 AI-powered preventative elder care. EverWell builds a personalized health baseline for an
 older adult over the first 7 to 14 days of wear, then flags deviations from that person's
 own normal rather than from generic population thresholds. When it detects something
@@ -37,6 +72,27 @@ running on your own devices.
 - A low-recovery alert banner, plus auto-refresh every 5 minutes
 - Stay-signed-in: if a WHOOP session is already active, the landing screen is skipped and you
   go straight to the dashboard, so you do not log in again every launch
+
+
+## Engineering highlights
+
+A quick tour for engineers of the decisions behind the build:
+
+- **Server-side OAuth proxy.** The WHOOP client secret never touches the browser. The Express
+  backend owns the OAuth token exchange and brokers every WHOOP API call, so credentials stay
+  server-side.
+- **Per-user baseline anomaly detection.** Instead of generic population thresholds, the
+  Anomaly Monitor compares recent vitals against each person's own rolling 14-day baseline and
+  flags meaningful deviations from their normal.
+- **Stateless cloud telephony.** Emergency calls are placed by Twilio from the server using
+  TwiML, so any client (a browser, the deployed site, or the iOS app) can trigger a real phone
+  call without ever holding the auth token.
+- **Remote-loaded native shell.** Capacitor wraps the live deployed site rather than bundling
+  the frontend, which keeps WHOOP OAuth on the same origin and lets frontend changes ship
+  through Git and Render with no app rebuild.
+- **Deliberately lightweight.** A vanilla HTML/CSS/JS frontend, a single-file Express backend,
+  and a short-lived response cache shared across the dashboard, report, and anomaly views. No
+  framework, no build step.
 
 
 ## How it works
@@ -431,4 +487,11 @@ Not built yet, in rough priority order:
 - A device-agnostic integration layer with planned support for Apple Watch, Garmin, and other
   health devices
 - The EverWell smart ring hardware itself
+
+
+## License
+
+Released under the MIT License. See [LICENSE](LICENSE) for the full text.
+
+Copyright (c) 2026 Abhiram Purohit and Reuhen Bhalod.
 </content>
