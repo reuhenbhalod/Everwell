@@ -136,12 +136,22 @@ async function getAccessToken() {
   return tokenStore.access_token;
 }
 
+// Short-lived cache so the dashboard, report, and anomaly endpoints (which all request the
+// same 14-day WHOOP data) share one set of API calls instead of refetching on every request.
+const whoopCache = new Map();
+const WHOOP_CACHE_MS = 60 * 1000;
+
 async function whoopGet(path, params = {}) {
+  const key = path + '?' + JSON.stringify(params);
+  const cached = whoopCache.get(key);
+  if (cached && Date.now() - cached.ts < WHOOP_CACHE_MS) return cached.data;
+
   const token = await getAccessToken();
   const response = await axios.get(`${WHOOP_API_BASE}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
     params
   });
+  whoopCache.set(key, { ts: Date.now(), data: response.data });
   return response.data;
 }
 

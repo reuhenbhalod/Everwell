@@ -855,7 +855,11 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    $(('view-' + v)).classList.add('active');
+    const viewEl = $('view-' + v);
+    // Restart the fade so every tab switch animates in smoothly.
+    viewEl.classList.remove('fade-in');
+    void viewEl.offsetWidth;
+    viewEl.classList.add('active', 'fade-in');
     if (v === 'report') loadReport();
     if (v === 'anomalies') loadAnomalies();
     if (v === 'timeline') buildTimeline();
@@ -1008,12 +1012,19 @@ async function loadDashboard() {
 
     // ── Show dashboard
     $('loadingState').classList.add('hidden');
-    $('view-dashboard').classList.add('active');
+    $('view-dashboard').classList.add('active', 'fade-in');
     (function (s) {
       if (!s) return;
       s.classList.add('ok');
       s.title = 'Synced ' + new Date().toLocaleTimeString();
     })($('syncBadge'));
+
+    // Warm the Report and Anomaly tabs in the background so opening them is instant.
+    // Guarded to WHOOP mode since those endpoints are WHOOP-only, and gated by their own
+    // loaded flags so this runs just once.
+    if (MODE !== 'health') {
+      setTimeout(function () { loadReport(); loadAnomalies(); }, 150);
+    }
 
   } catch (err) {
     console.error('loadDashboard error:', err);
