@@ -10,15 +10,45 @@
 ![Twilio](https://img.shields.io/badge/Twilio-voice-F22F46?logo=twilio&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-deploy-46E3B7?logo=render&logoColor=white)
 
-**Live deployment:** https://everwell-mt2a.onrender.com (landing page; the dashboard needs a
-WHOOP login to populate with live data)
+## Screenshots
 
-<!-- HIGH IMPACT: add a screenshot or short GIF of the dashboard here. For anyone viewing this
-     on GitHub it is the single biggest improvement you can make. Drop the file in docs/ and
-     reference it, for example:  ![EverWell dashboard](docs/dashboard.png) -->
+<!-- Screenshots live in docs/screenshots/. Captured from the native iOS build. -->
+
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.jpg" alt="EverWell dashboard with live recovery score, day strain, sleep, and respiratory rate" width="300">
+</p>
+
+<p align="center">
+  <sub><b>Live health monitor</b> — recovery score, day strain, sleep performance, and respiratory rate at a glance.</sub>
+</p>
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/report.jpg" alt="Daily AI health report" width="250"><br>
+      <sub><b>Daily AI Health Report</b><br>Plain-language summary against a 7-day baseline.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/emergency.jpg" alt="Emergency escalation with a 30-second countdown" width="250"><br>
+      <sub><b>Emergency Escalation</b><br>30-second countdown with call and cancel.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/care-team.jpg" alt="Care team with priority-ordered contacts" width="250"><br>
+      <sub><b>Care Team</b><br>Priority-ordered emergency contacts.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/landing.jpg" alt="Landing screen offering WHOOP or Apple Health" width="250"><br>
+      <sub><b>Dual Data Source</b><br>Connect WHOOP or Apple Health.</sub>
+    </td>
+  </tr>
+</table>
 
 ## Contents
 
+- [Screenshots](#screenshots)
 - [What you get on the dashboard](#what-you-get-on-the-dashboard)
 - [Engineering highlights](#engineering-highlights)
 - [How it works](#how-it-works)
@@ -32,7 +62,6 @@ WHOOP login to populate with live data)
 - [Environment variables](#environment-variables)
 - [Tech stack](#tech-stack)
 - [Project layout](#project-layout)
-- [Roadmap](#roadmap)
 - [License](#license)
 
 AI-powered preventative elder care. EverWell builds a personalized health baseline for an
