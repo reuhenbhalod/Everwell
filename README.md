@@ -10,10 +10,27 @@
 ![Twilio](https://img.shields.io/badge/Twilio-voice-F22F46?logo=twilio&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-deploy-46E3B7?logo=render&logoColor=white)
 
+## Contents
+
+- [Screenshots](#screenshots)
+- [What you get on the dashboard](#what-you-get-on-the-dashboard)
+- [Engineering highlights](#engineering-highlights)
+- [How it works](#how-it-works)
+- [Before you start](#before-you-start)
+- [Part 1: Run the dashboard locally with WHOOP](#part-1-run-the-dashboard-locally-with-whoop)
+- [Part 2: Deploy to the cloud so a phone can reach it](#part-2-deploy-to-the-cloud-so-a-phone-can-reach-it)
+- [Part 3: Run on your iPhone and Apple Watch with Apple Health](#part-3-run-on-your-iphone-and-apple-watch-with-apple-health)
+- [Part 4: Make the emergency call actually ring](#part-4-make-the-emergency-call-actually-ring)
+- [How the calling works](#how-the-calling-works)
+- [Troubleshooting](#troubleshooting)
+- [Environment variables](#environment-variables)
+- [Tech stack](#tech-stack)
+- [Project layout](#project-layout)
+- [License](#license)
+
 ## Screenshots
 
 <!-- Screenshots live in docs/screenshots/. Captured from the native iOS build. -->
-
 
 <p align="center">
   <img src="docs/screenshots/dashboard.jpg" alt="EverWell dashboard with live recovery score, day strain, sleep, and respiratory rate" width="300">
@@ -45,24 +62,6 @@
     </td>
   </tr>
 </table>
-
-## Contents
-
-- [Screenshots](#screenshots)
-- [What you get on the dashboard](#what-you-get-on-the-dashboard)
-- [Engineering highlights](#engineering-highlights)
-- [How it works](#how-it-works)
-- [Before you start](#before-you-start)
-- [Part 1: Run the dashboard locally with WHOOP](#part-1-run-the-dashboard-locally-with-whoop)
-- [Part 2: Deploy to the cloud so a phone can reach it](#part-2-deploy-to-the-cloud-so-a-phone-can-reach-it)
-- [Part 3: Run on your iPhone and Apple Watch with Apple Health](#part-3-run-on-your-iphone-and-apple-watch-with-apple-health)
-- [Part 4: Make the emergency call actually ring](#part-4-make-the-emergency-call-actually-ring)
-- [How the calling works](#how-the-calling-works)
-- [Troubleshooting](#troubleshooting)
-- [Environment variables](#environment-variables)
-- [Tech stack](#tech-stack)
-- [Project layout](#project-layout)
-- [License](#license)
 
 AI-powered preventative elder care. EverWell builds a personalized health baseline for an
 older adult over the first 7 to 14 days of wear, then flags deviations from that person's
