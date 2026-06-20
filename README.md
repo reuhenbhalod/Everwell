@@ -37,7 +37,7 @@
 </p>
 
 <p align="center">
-  <sub><b>Live health monitor</b> — recovery score, day strain, sleep performance, and respiratory rate at a glance.</sub>
+  <sub><b>Live health monitor</b> - recovery score, day strain, sleep performance, and respiratory rate at a glance.</sub>
 </p>
 
 <table>
