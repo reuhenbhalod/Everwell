@@ -138,7 +138,7 @@ A quick tour for engineers of the decisions behind the build:
   handshake, proxies WHOOP API calls so your WHOOP secret never reaches the browser, and
   exposes a few JSON endpoints. Repeated WHOOP requests are briefly cached so the dashboard,
   report, and anomaly views share data and load faster.
-- Frontend: plain HTML, CSS, and JavaScript in public/. No React, no build step. index.html
+- Frontend: HTML, CSS, and JavaScript in public/. No React, no build step. index.html
   is the landing and connect screen. dashboard.html is the dashboard.
 - Mobile: Capacitor wraps the deployed web app as a native iOS app so it can read Apple
   Health. The native shell loads the live deployed site remotely instead of bundling the
